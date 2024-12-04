@@ -23,3 +23,8 @@ dist-ssr
 
 # vite 打包分析产物
 stats.html
+
+# lock文件
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
