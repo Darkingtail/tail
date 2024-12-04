@@ -1,7 +1,8 @@
 {
-	"recommendations": [
-		"biomejs.biome",
-		"bradlc.vscode-tailwindcss",
-		"lokalise.i18n-ally"
-	]
+  "recommendations": [
+    "biomejs.biome",
+    "bradlc.vscode-tailwindcss",
+    "lokalise.i18n-ally",
+    "adam-bender.commit-message-editor"
+  ]
 }
