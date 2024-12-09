@@ -32,17 +32,23 @@ const queryClient = new QueryClient({
 	},
 });
 
+// React root component, render app
 const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,
 );
 
 root.render(
+	// HelmetProvider 是一个用于在 React 应用中添加 SEO 头部信息的组件。它可以帮助你更好地控制页面的标题、描述、关键词等元数据，从而提高页面的搜索引擎优化（SEO）效果。
 	<HelmetProvider>
+		{/* React Query 是一个用于在 React 应用中高效地获取、缓存和更新异步数据的库。 */}
 		<QueryClientProvider client={queryClient}>
+			{/* React Query Devtools 是一个浏览器扩展程序，用于调试和检查 React Query 的内部状态。 */}
 			<ReactQueryDevtools initialIsOpen={false} />
+			{/* 不写fallback，与Router中的组件懒加载一起使用 */}
 			<Suspense>
+				{/* Analytics组件是一个用于收集和分析用户行为数据的组件，它可以帮助你更好地理解用户需求和行为模式，从而优化应用的设计和功能 */}
 				<Analytics />
-
+				{/* 路由根节点 */}
 				<App />
 			</Suspense>
 		</QueryClientProvider>
