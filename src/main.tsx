@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-unresolved
+import SuspenseLoading from "@/components/suspense-loading/imdex";
 // react-query
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -7,7 +9,6 @@ import { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 // react helmet
 import { HelmetProvider } from "react-helmet-async";
-// eslint-disable-next-line import/no-unresolved
 import "virtual:svg-icons-register";
 
 import App from "@/App";
@@ -45,7 +46,7 @@ root.render(
 			{/* React Query Devtools 是一个浏览器扩展程序，用于调试和检查 React Query 的内部状态。 */}
 			<ReactQueryDevtools initialIsOpen={false} />
 			{/* 不写fallback，与Router中的组件懒加载一起使用 */}
-			<Suspense>
+			<Suspense fallback={<SuspenseLoading />}>
 				{/* Analytics组件是一个用于收集和分析用户行为数据的组件，它可以帮助你更好地理解用户需求和行为模式，从而优化应用的设计和功能 */}
 				<Analytics />
 				{/* 路由根节点 */}
