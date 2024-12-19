@@ -1,6 +1,6 @@
 import LocalePicker from "@/components/locale-picker";
 import { useUserToken } from "@/store/userStore";
-import { Layout } from "antd";
+import { Layout, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router-dom";
 import LoginForm from "./LoginForm";
@@ -8,10 +8,7 @@ import MobileForm from "./MobileForm";
 import QrCodeFrom from "./QrCodeForm";
 import RegisterForm from "./RegisterForm";
 import ResetForm from "./ResetForm";
-import {
-	LoginStateProvider,
-	useLoginStateContext,
-} from "./providers/LoginStateProvider";
+import { LoginStateProvider } from "./providers/LoginStateProvider";
 
 const { VITE_APP_HOMEPAGE: HOMEPAGE } = import.meta.env;
 
@@ -26,7 +23,6 @@ function Login() {
 		return <Navigate to={HOMEPAGE} replace />;
 	}
 
-	const { loginState } = useLoginStateContext();
 	// const gradientBg = Color(colorBgElevated).alpha(0.9).toString();
 	// const bg = `linear-gradient(${gradientBg}, ${gradientBg}) center center / cover no-repeat,url(${Overlay2})`;
 
@@ -43,14 +39,11 @@ function Login() {
 					<QrCodeFrom />
 					<RegisterForm />
 					<ResetForm />
-
-					{/* {loginState !== LoginStateEnum.LOGIN ? null : (
-						<Typography.Text className="flex flex-row gap-[16px] text-2xl justify-center mt-8">
-							{t("sys.login.signInSecondTitle")}
-							{loginState}
-						</Typography.Text>
-					)} */}
 				</LoginStateProvider>
+
+				<Typography.Text className="flex flex-row gap-[16px] text-2xl justify-center mt-8">
+					{t("sys.login.signInSecondTitle")}
+				</Typography.Text>
 			</div>
 		</Layout>
 	);
