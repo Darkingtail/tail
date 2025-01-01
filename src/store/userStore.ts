@@ -1,5 +1,7 @@
+// https://tanstack.com/query/latest/docs/framework/react/reference/useMutation
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+// https://github.com/pmndrs/zustand
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
