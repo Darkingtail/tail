@@ -12,7 +12,7 @@ const { Countdown } = Statistic;
 
 function MobileForm() {
 	const { t } = useTranslation();
-	const onFinish = (values: any) => {
+	const onFinish = (values: { phone: string; code: string }) => {
 		console.log("Received values of form: ", values);
 	};
 
@@ -36,8 +36,16 @@ function MobileForm() {
 	};
 	return (
 		<>
-			<div className="mb-4 text-2xl font-bold xl:text-3xl">
-				{t("sys.login.mobileSignInFormTitle")}
+			<div className="mb-4 text-2xl font-bold xl:text-3xl flex justify-between items-center">
+				<div className="flex-1">{t("sys.login.mobileSignInFormTitle")}</div>
+				<div className="w-auto">
+					<ReturnButton
+						onClick={() => {
+							reset();
+							backToLogin();
+						}}
+					/>
+				</div>
 			</div>
 			<Form
 				name="normal_login"
@@ -95,13 +103,6 @@ function MobileForm() {
 						{t("sys.login.loginButton")}
 					</Button>
 				</Form.Item>
-
-				<ReturnButton
-					onClick={() => {
-						reset();
-						backToLogin();
-					}}
-				/>
 			</Form>
 		</>
 	);

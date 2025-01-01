@@ -1,13 +1,23 @@
 import { DEFAULT_USER, TEST_USER } from "@/_mock/assets";
 import type { SignInReq } from "@/api/services/userService";
-import Logo from "@/assets/images/logo.svg";
+import Logo from "@/assets/images/logo.svg"; // vite 会自动处理 svg 文件，将其视为一个模块
 import { useSignIn } from "@/store/userStore";
 import ProTag from "@/theme/antd/components/tag";
 import { useThemeToken } from "@/theme/hooks";
-import { Alert, Button, Checkbox, Col, Divider, Form, Input, Row } from "antd";
+import {
+	Alert,
+	Button,
+	Checkbox,
+	Col,
+	Divider,
+	Form,
+	Input,
+	Row,
+	Tooltip,
+} from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AiFillGithub, AiFillGoogleCircle, AiFillWechat } from "react-icons/ai";
+import { AiFillGithub } from "react-icons/ai";
 
 import {
 	LoginStateEnum,
@@ -20,7 +30,7 @@ function LoginForm() {
 	const [loading, setLoading] = useState(false);
 
 	const { loginState, setLoginState } = useLoginStateContext();
-	const signIn = useSignIn();
+	const signIn = useSignIn(); // 登陆函数，在函数中进行路由重定向
 
 	if (loginState !== LoginStateEnum.LOGIN) return null; // login form only show when loginState is LOGIN
 
@@ -184,9 +194,13 @@ function LoginForm() {
 				<Divider className="!text-xs">{t("sys.login.otherSignIn")}</Divider>
 
 				<div className="flex cursor-pointer justify-around text-2xl">
-					<AiFillGithub />
-					<AiFillWechat />
-					<AiFillGoogleCircle />
+					<Tooltip title="Github">
+						<AiFillGithub
+							onClick={() => window.open("https://github.com/Darkingtail/tail")}
+						/>
+					</Tooltip>
+					{/* <AiFillWechat />
+					<AiFillGoogleCircle /> */}
 				</div>
 			</Form>
 		</>

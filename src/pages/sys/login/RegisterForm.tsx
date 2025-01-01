@@ -27,13 +27,16 @@ function RegisterForm() {
 
 	return (
 		<>
-			<div className="mb-4 text-2xl font-bold xl:text-3xl">
-				{t("sys.login.signUpFormTitle")}
+			<div className="mb-4 text-2xl font-bold xl:text-3xl flex justify-between items-center">
+				<div className="flex-1">{t("sys.login.signUpFormTitle")}</div>
+				<div className="w-auto">
+					<ReturnButton onClick={backToLogin} />
+				</div>
 			</div>
 			<Form
 				name="normal_login"
 				size="large"
-				initialValues={{ remember: true }}
+				initialValues={{}}
 				onFinish={onFinish}
 			>
 				<Form.Item
@@ -93,16 +96,20 @@ function RegisterForm() {
 
 				<div className="mb-2 text-xs text-gray">
 					<span>{t("sys.login.registerAndAgree")}</span>
-					<a href="./" className="text-sm !underline">
+					<a
+						href="https://github.com/Darkingtail/tail/blob/main/LICENSE"
+						className="text-sm !underline"
+					>
 						{t("sys.login.termsOfService")}
 					</a>
 					{" & "}
-					<a href="./" className="text-sm !underline">
+					<a
+						href="https://github.com/Darkingtail/tail/blob/main/LICENSE"
+						className="text-sm !underline"
+					>
 						{t("sys.login.privacyPolicy")}
 					</a>
 				</div>
-
-				<ReturnButton onClick={backToLogin} />
 			</Form>
 		</>
 	);

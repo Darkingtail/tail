@@ -14,14 +14,21 @@ function QrCodeFrom() {
 	if (loginState !== LoginStateEnum.QR_CODE) return null;
 	return (
 		<>
-			<div className="mb-4 text-2xl font-bold xl:text-3xl">
-				{t("sys.login.qrSignInFormTitle")}
+			<div className="mb-4 text-2xl font-bold xl:text-3xl flex justify-between items-center">
+				<div className="flex-1">{t("sys.login.qrSignInFormTitle")}</div>
+				<div className="w-auto">
+					<ReturnButton onClick={backToLogin} />
+				</div>
 			</div>
 			<div className="flex w-full flex-col items-center justify-center">
-				<QRCode value="https://ant.design/" size={300} />
+				<QRCode
+					size={300}
+					errorLevel="H"
+					value="https://ant.design/"
+					icon="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"
+				/>
 				<p className="my-4 text-sm">{t("sys.login.scanSign")}</p>
 			</div>
-			<ReturnButton onClick={backToLogin} />
 		</>
 	);
 }

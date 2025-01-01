@@ -1,7 +1,7 @@
 import { Button, Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { SvgIcon } from "@/components/icon";
+// import { SvgIcon } from "@/components/icon";
 
 import { ReturnButton } from "./components/ReturnButton";
 import {
@@ -21,16 +21,19 @@ function ResetForm() {
 
 	return (
 		<>
-			<div className="mb-8 text-center">
+			{/* <div className="mb-8 text-center">
 				<SvgIcon icon="ic-reset-password" size="100" />
-			</div>
-			<div className="mb-4 text-center text-2xl font-bold xl:text-3xl">
-				{t("sys.login.forgetFormTitle")}
+			</div> */}
+			<div className="mb-4 text-2xl font-bold xl:text-3xl flex justify-between items-center">
+				<div className="flex-1">{t("sys.login.forgetFormTitle")}</div>
+				<div className="w-auto">
+					<ReturnButton onClick={backToLogin} />
+				</div>
 			</div>
 			<Form
 				name="normal_login"
 				size="large"
-				initialValues={{ remember: true }}
+				initialValues={{}}
 				onFinish={onFinish}
 			>
 				<p className="mb-4 h-14 text-center text-gray">
@@ -49,8 +52,6 @@ function ResetForm() {
 						{t("sys.login.sendEmailButton")}
 					</Button>
 				</Form.Item>
-
-				<ReturnButton onClick={backToLogin} />
 			</Form>
 		</>
 	);
