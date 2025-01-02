@@ -52,10 +52,14 @@ const useUserStore = create<UserStore>()(
 	),
 );
 
+// get user info from zustand store by useUserInfo()
 export const useUserInfo = () => useUserStore((state) => state.userInfo);
+// get user token from zustand store by useUserToken()
 export const useUserToken = () => useUserStore((state) => state.userToken);
+// get user permission from zustand store by useUserPermission()
 export const useUserPermission = () =>
 	useUserStore((state) => state.userInfo.permissions);
+// get user actions from zustand store by useUserActions()
 export const useUserActions = () => useUserStore((state) => state.actions);
 
 export const useSignIn = () => {
