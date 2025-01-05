@@ -1,0 +1,7 @@
+{
+	"_mock": {
+		"_user": {
+			"errMsg": "Incorrect username or password!"
+		}
+	}
+}
