@@ -3,6 +3,7 @@
     "biomejs.biome",
     "bradlc.vscode-tailwindcss",
     "lokalise.i18n-ally",
-    "adam-bender.commit-message-editor"
+    "adam-bender.commit-message-editor",
+    "antfu.file-nesting"
   ]
 }
