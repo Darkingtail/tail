@@ -30,6 +30,7 @@ const PAGE_NOT_FOUND_ROUTE: AppRouteObject = {
 // no multi-role routes
 export default function Router() {
 	const permissionRoutes = usePermissionRoutes();
+	// async routes, after login
 	const asyncRoutes: AppRouteObject = {
 		path: "/",
 		element: (
