@@ -3,17 +3,19 @@ import { http, HttpResponse, delay } from "msw";
 
 import { UserApi } from "@/api/services/userService";
 
+import { t } from "@/locales/i18n";
+
 import { USER_LIST } from "../assets";
 
 const signIn = http.post(`/api${UserApi.SignIn}`, async ({ request }) => {
-	const { username, password } = await request.json();
+	const { username, password } = await request.json(); // TODO: encrypt
 
 	const user = USER_LIST.find((item) => item.username === username);
 
 	if (!user || user.password !== password) {
 		return HttpResponse.json({
 			status: 10001,
-			message: "Incorrect username or password.",
+			message: t("_mock._user.errMsg"),
 		});
 	}
 
