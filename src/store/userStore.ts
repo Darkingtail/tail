@@ -69,7 +69,7 @@ export const useUserPermission = () =>
 export const useUserActions = () => useUserStore((state) => state.actions);
 
 export const useSignIn = () => {
-	const navigatge = useNavigate();
+	const navigate = useNavigate();
 	const { setUserToken, setUserInfo } = useUserActions();
 	// tanstack/react-query useMutation
 	const signInMutation = useMutation({
@@ -82,7 +82,7 @@ export const useSignIn = () => {
 			const { user, accessToken, refreshToken } = res;
 			setUserToken({ accessToken, refreshToken }); // set token
 			setUserInfo(user); // set user info
-			navigatge(HOMEPAGE, { replace: true }); // navigate to homepage
+			navigate(HOMEPAGE, { replace: true }); // navigate to homepage
 			toast.success(t("sys.login.loginSuccessTitle"), { closeButton: true });
 		} catch (err) {
 			toast.error(err.message, {
