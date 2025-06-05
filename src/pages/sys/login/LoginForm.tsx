@@ -69,7 +69,8 @@ function LoginForm() {
 							<div className="flex flex-col">
 								<div className="flex">
 									<ProTag className="flex-shrink-0">
-										Admin {t("sys.login.userName")}:
+										{/* {t("sys.login.userName")} */}
+										Admin :
 									</ProTag>
 									<strong
 										className="ml-1"
@@ -89,9 +90,7 @@ function LoginForm() {
 								</div>
 
 								<div className="flex mt-2">
-									<ProTag className="flex-shrink-0">
-										Test {t("sys.login.userName")}:
-									</ProTag>
+									<ProTag className="flex-shrink-0">Test :</ProTag>
 									<strong
 										className="ml-1"
 										style={{ color: themeToken.colorInfoTextHover }}
