@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* 自定义 base 样式 */
+@layer base {
+	body,
+	body * {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+}
+
+/* 自定义组件样式 */
+/* @layer components {
+} */

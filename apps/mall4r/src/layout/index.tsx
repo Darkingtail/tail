@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
 
 export default function Layout() {
-  return (
-    <div>
-      Layout
-      <Outlet />
-    </div>
-  );
+	return (
+		<div className="h-full w-full">
+			Layout
+			<Outlet />
+		</div>
+	);
 }
