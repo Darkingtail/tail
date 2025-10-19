@@ -1,10 +1,9 @@
 import loginLogo from "@/assets/img/login-logo.png";
-import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Form, Input } from "antd";
-import { useEffect, useState } from "react";
-// import { getUUID } from "@/utils";
 import CaptchaVerify from "@/components/captcha-verify";
 import { CaptchaType } from "@/constants/captcha-verify";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { Button, Form, Input } from "antd";
+import { useCallback, useEffect, useState } from "react";
 
 type LoginFormFields = {
 	userName: string;
@@ -13,18 +12,31 @@ type LoginFormFields = {
 
 export function Login() {
 	const [form] = Form.useForm<LoginFormFields>();
-
 	const [captchaVisible, setCaptchaVisible] = useState(false);
+	const [pendingValues, setPendingValues] = useState<LoginFormFields | null>(
+		null,
+	);
 
-	const handleLogin = (values: LoginFormFields) => {
-		console.log("Valid and values of form: ", values);
+	const submitWithCaptcha = useCallback(
+		(values: LoginFormFields, verification: string) => {
+			console.log("submit login with captcha:", {
+				...values,
+				captchaVerification: verification,
+			});
+			// TODO: call login API here
+		},
+		[],
+	);
+
+	const handleLogin = useCallback((values: LoginFormFields) => {
+		setPendingValues(values);
 		setCaptchaVisible(true);
-	};
+	}, []);
 
 	useEffect(() => {
 		form.setFieldsValue({
 			userName: "admin",
-			password: "12312312",
+			password: "123456",
 		});
 
 		const handleGlobalKeyUp = (event: KeyboardEvent) => {
@@ -90,8 +102,16 @@ export function Login() {
 				open={captchaVisible}
 				imgSize={{ width: 400, height: 200 }}
 				captchaType={CaptchaType.BlockPuzzle}
-				onSuccess={() => {}}
-				onCancel={() => setCaptchaVisible(false)}
+				onSuccess={(verification) => {
+					const values = pendingValues ?? form.getFieldsValue(true);
+					submitWithCaptcha(values, verification);
+					setPendingValues(null);
+					setCaptchaVisible(false);
+				}}
+				onCancel={() => {
+					setPendingValues(null);
+					setCaptchaVisible(false);
+				}}
 			/>
 		</>
 	);

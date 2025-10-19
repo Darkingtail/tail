@@ -1,7 +1,7 @@
 import {
-	httpClient,
 	type HttpClient,
 	type MallAxiosRequestConfig,
+	httpClient,
 } from "@/service";
 
 export interface CaptchaRequestPayload {

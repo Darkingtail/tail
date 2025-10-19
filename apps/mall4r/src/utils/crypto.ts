@@ -1,14 +1,13 @@
 import CryptoJS from "crypto-js";
-// 加密
-const keyStr = "-mall4r-password"; // 解密用的key
-export function encrypt(word: string): string {
-	const time = Date.now();
 
-	const key = CryptoJS.enc.Utf8.parse(keyStr);
-	const srcs = CryptoJS.enc.Utf8.parse(time + word); // 加密方式: 时间戳 + 密文
-	const encrypted = CryptoJS.AES.encrypt(srcs, key, {
+const DEFAULT_AES_KEY = "XwKsGlMcdPMEhR1B";
+
+export function aesEncrypt(value: string, key: string = DEFAULT_AES_KEY): string {
+	const parsedKey = CryptoJS.enc.Utf8.parse(key);
+	const parsedValue = CryptoJS.enc.Utf8.parse(value);
+
+	return CryptoJS.AES.encrypt(parsedValue, parsedKey, {
 		mode: CryptoJS.mode.ECB,
 		padding: CryptoJS.pad.Pkcs7,
-	});
-	return encrypted.toString();
+	}).toString();
 }
