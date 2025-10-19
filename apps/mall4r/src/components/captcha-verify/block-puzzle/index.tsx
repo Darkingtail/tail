@@ -1,7 +1,7 @@
 import type { CaptchaResponseData } from "@/service/api/captcha-verify";
 import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 type BlockPuzzleProps = {
 	data: CaptchaResponseData | null;
@@ -47,6 +47,9 @@ export default function BlockPuzzle({
 	const [pieceOffset, setPieceOffset] = useState(0);
 	const [isDragging, setIsDragging] = useState(false);
 	const [cursor, setCursor] = useState<"pointer" | "grabbing">("pointer");
+	const [finishedSubBarStyle, setFinishedSubBarStyle] = useState<
+		CSSProperties | undefined
+	>();
 
 	const { originalImageWidth, sliderImageWidth } = (repData ??
 		{}) as CaptchaMeta;
@@ -91,6 +94,11 @@ export default function BlockPuzzle({
 			pieceOffsetRef.current = mappedPieceOffset;
 			lastPieceOffsetRef.current = mappedPieceOffset;
 			setPieceOffset(mappedPieceOffset);
+
+			setFinishedSubBarStyle({
+				background: "#f0fff0",
+				width: `${clampedOffset}px`,
+			});
 		};
 
 		const handlePointerUp = async () => {
@@ -127,6 +135,10 @@ export default function BlockPuzzle({
 				handleLeftRef.current = 0;
 				pieceOffsetRef.current = 0;
 				lastPieceOffsetRef.current = 0;
+				setFinishedSubBarStyle({
+					background: undefined,
+					width: 0,
+				});
 			}
 		};
 
@@ -221,6 +233,11 @@ export default function BlockPuzzle({
 						}}
 					>
 						<span>{BAR_TEXT}</span>
+						<div
+							role="presentation"
+							className="absolute top-0"
+							style={{ ...finishedSubBarStyle, height: BAR_HEIGHT }}
+						/>
 						<div
 							role="presentation"
 							className="absolute top-0 box-border flex h-full items-center justify-center border border-solid border-[#4096ff] bg-white text-[#4096ff]"
