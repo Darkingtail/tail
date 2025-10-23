@@ -3,7 +3,7 @@ import {
 	type CaptchaResponseData,
 	verificationApi,
 } from "@/service/api/captcha-verify";
-import { aesEncrypt } from "@/utils/crypto";
+import { captchaEncrypt } from "@/utils/crypto";
 import { ReloadOutlined } from "@ant-design/icons";
 import { Button, Modal, message } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -81,7 +81,7 @@ export default function CaptchaVerify({
 
 			const pointJsonRaw = JSON.stringify(point);
 			const pointJson = extra.secretKey
-				? aesEncrypt(pointJsonRaw, extra.secretKey)
+				? captchaEncrypt(pointJsonRaw, extra.secretKey)
 				: pointJsonRaw;
 
 			setVerifying(true);
@@ -95,7 +95,7 @@ export default function CaptchaVerify({
 				if (response?.repCode === "0000") {
 					const verificationPayload = `${extra.token}---${pointJsonRaw}`;
 					const captchaVerification = extra.secretKey
-						? aesEncrypt(verificationPayload, extra.secretKey)
+						? captchaEncrypt(verificationPayload, extra.secretKey)
 						: verificationPayload;
 					message.success("验证成功");
 					onSuccess(captchaVerification);

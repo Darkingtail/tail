@@ -1,14 +1,12 @@
 import loginLogo from "@/assets/img/login-logo.png";
 import CaptchaVerify from "@/components/captcha-verify";
 import { CaptchaType } from "@/constants/captcha-verify";
+import type { LoginFormFields } from "@/service/api/login";
+import { loginApi } from "@/service/api/login";
+import { pwdEncrypt } from "@/utils/crypto";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input } from "antd";
 import { useCallback, useEffect, useState } from "react";
-
-type LoginFormFields = {
-	userName: string;
-	password: string;
-};
 
 export function Login() {
 	const [form] = Form.useForm<LoginFormFields>();
@@ -23,7 +21,15 @@ export function Login() {
 				...values,
 				captchaVerification: verification,
 			});
-			// TODO: call login API here
+			loginApi
+				.login({
+					userName: values.userName,
+					passWord: pwdEncrypt(values.passWord),
+					captchaVerification: verification,
+				})
+				.then((res) => {
+					console.log("login response:", res);
+				});
 		},
 		[],
 	);
@@ -36,7 +42,7 @@ export function Login() {
 	useEffect(() => {
 		form.setFieldsValue({
 			userName: "admin",
-			password: "123456",
+			passWord: "123456",
 		});
 
 		const handleGlobalKeyUp = (event: KeyboardEvent) => {
@@ -76,12 +82,12 @@ export function Login() {
 							<Input prefix={<UserOutlined />} placeholder="账号" allowClear />
 						</Form.Item>
 						<Form.Item<LoginFormFields>
-							name="password"
+							name="passWord"
 							rules={[{ required: true, message: "密码不能为空" }]}
 						>
 							<Input
 								prefix={<LockOutlined />}
-								type="password"
+								type="passWord"
 								placeholder="密码"
 								allowClear
 							/>

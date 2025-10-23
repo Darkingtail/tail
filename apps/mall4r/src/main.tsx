@@ -13,6 +13,3 @@ createRoot(container).render(
 		<App />
 	</StrictMode>,
 );
-
-// codex resume 0199f562-ca2a-7550-9302-90c9af7f3fb8
-// codex resume 0199f562-ca2a-7550-9302-90c9af7f3fb8

@@ -1,8 +1,9 @@
-import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
+import { fileURLToPath } from "node:url";
 import { type UserConfig, defineConfig } from "vite";
 
+// codex resume 0199f562-ca2a-7550-9302-90c9af7f3fb8
 // https://vite.dev/config/
 export default defineConfig((config: UserConfig) => {
 	console.log("vite user config:", config);
