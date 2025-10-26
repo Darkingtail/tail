@@ -1,15 +1,15 @@
 import Router from "@/router";
-import { ConfigProvider } from "antd";
+import AntdConfig from "@/theme/antd";
 import { ErrorBoundary } from "react-error-boundary";
 
 function App() {
 	return (
 		<>
-			<ConfigProvider>
+			<AntdConfig>
 				<ErrorBoundary fallback={<div>Something went wrong</div>}>
 					<Router />
 				</ErrorBoundary>
-			</ConfigProvider>
+			</AntdConfig>
 		</>
 	);
 }

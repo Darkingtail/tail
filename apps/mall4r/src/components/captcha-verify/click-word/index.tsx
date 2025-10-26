@@ -3,6 +3,7 @@ type ClickWordProps = {
 	data: CaptchaResponseData | null;
 	imgSize: { width: number; height: number };
 	loading: boolean;
+	isLogining: boolean;
 	verifying: boolean;
 	onRefresh: () => Promise<void> | void;
 	onSuccess: (captchaVerification: string) => void;
@@ -12,6 +13,7 @@ export default function ClickWord({
 	data,
 	imgSize,
 	loading,
+	isLogining,
 	verifying,
 	onRefresh,
 	onSuccess,
@@ -19,6 +21,7 @@ export default function ClickWord({
 	void data;
 	void imgSize;
 	void loading;
+	void isLogining;
 	void verifying;
 	void onRefresh;
 	void onSuccess;

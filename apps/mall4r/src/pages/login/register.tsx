@@ -1,7 +1,7 @@
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
-export function Register() {
+export default function Register() {
 	const navigate = useNavigate();
 	return (
 		<div>

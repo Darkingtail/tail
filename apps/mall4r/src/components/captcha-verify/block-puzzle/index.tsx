@@ -7,6 +7,7 @@ type BlockPuzzleProps = {
 	data: CaptchaResponseData | null;
 	imgSize: { width: number; height: number };
 	loading: boolean;
+	isLogining: boolean;
 	verifying: boolean;
 	onVerify: (point: { x: number; y: number }) => Promise<void> | void;
 };
@@ -33,6 +34,7 @@ export default function BlockPuzzle({
 	data,
 	imgSize,
 	loading,
+	isLogining,
 	verifying,
 	onVerify,
 }: BlockPuzzleProps) {
@@ -159,7 +161,7 @@ export default function BlockPuzzle({
 	]);
 
 	const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-		if (loading || verifying) {
+		if (loading || verifying || isLogining) {
 			return;
 		}
 
@@ -184,7 +186,7 @@ export default function BlockPuzzle({
 		event.preventDefault();
 	};
 
-	const busy = loading || verifying;
+	const busy = loading || verifying || isLogining;
 
 	return (
 		<div className="select-none">

@@ -324,7 +324,9 @@ export function createHttpClient(
 	);
 
 	instance.cancelAllPending = () => {
-		pendingRequests.forEach((controller) => controller.abort());
+		for (const controller of pendingRequests.values()) {
+			controller.abort();
+		}
 		pendingRequests.clear();
 	};
 

@@ -1,37 +1,56 @@
 import loginLogo from "@/assets/img/login-logo.png";
+import type { CaptchaVerifyHandle } from "@/components/captcha-verify";
 import CaptchaVerify from "@/components/captcha-verify";
+import ThemeModeSwitch from "@/components/theme-mode-switch";
 import { CaptchaType } from "@/constants/captcha-verify";
+import useUserAccessToken from "@/hooks/useUserAccessToken";
 import type { LoginFormFields } from "@/service/api/login";
 import { loginApi } from "@/service/api/login";
+import useUserStore from "@/store/userStore";
 import { pwdEncrypt } from "@/utils/crypto";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Form, Input } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { Button, Form, Input, Layout, message } from "antd";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
-export function Login() {
+const { Content } = Layout;
+
+export default function Login() {
 	const [form] = Form.useForm<LoginFormFields>();
+	const actions = useUserStore((state) => state.actions);
+	const { accessToken, isHydrated } = useUserAccessToken();
 	const [captchaVisible, setCaptchaVisible] = useState(false);
 	const [pendingValues, setPendingValues] = useState<LoginFormFields | null>(
 		null,
 	);
+	const [isLogining, setIsLogining] = useState(false);
+	const navigate = useNavigate();
+	const captchaVerifyRef = useRef<CaptchaVerifyHandle>(null);
 
 	const submitWithCaptcha = useCallback(
-		(values: LoginFormFields, verification: string) => {
-			console.log("submit login with captcha:", {
-				...values,
-				captchaVerification: verification,
-			});
-			loginApi
-				.login({
+		async (values: LoginFormFields, verification: string) => {
+			setIsLogining(true);
+			try {
+				const res = await loginApi.login({
 					userName: values.userName,
 					passWord: pwdEncrypt(values.passWord),
 					captchaVerification: verification,
-				})
-				.then((res) => {
-					console.log("login response:", res);
 				});
+				actions.setUserToken(res);
+				actions.setAuthorization(res.accessToken ?? "");
+				message.success("登录成功");
+				setPendingValues(null);
+				setCaptchaVisible(false);
+				navigate("/home", { replace: true });
+				return true;
+			} catch {
+				await captchaVerifyRef.current?.refresh();
+				return false;
+			} finally {
+				setIsLogining(false);
+			}
 		},
-		[],
+		[actions, navigate],
 	);
 
 	const handleLogin = useCallback((values: LoginFormFields) => {
@@ -57,9 +76,17 @@ export function Login() {
 		};
 	}, [form]);
 
+	if (!isHydrated) {
+		return null;
+	}
+
+	if (accessToken) {
+		return <Navigate to="/home" replace />;
+	}
+
 	return (
-		<>
-			<div className="relative h-screen w-screen overflow-hidden bg-[url(@/assets/img/login-bg.png)] bg-cover bg-no-repeat">
+		<Layout>
+			<Content className="relative h-screen w-screen overflow-hidden bg-[url(@/assets/img/login-bg.png)] bg-cover bg-no-repeat">
 				<div className="absolute left-1/2 w-[410px] -translate-x-1/2 pt-[10%]">
 					<div className="mb-[30px] text-center">
 						<img className="mx-auto max-w-[50%]" src={loginLogo} alt="logo" />
@@ -101,24 +128,28 @@ export function Login() {
 					</Form>
 				</div>
 				<div className="text=[#999] absolute bottom-[10%] w-full text-center text-xs">
-					Copyright ©
+					Copyright © 2019 广州市蓝海创新科技有限公司
 				</div>
-			</div>
+				<ThemeModeSwitch className="absolute! top-4 right-4 z-10" />
+			</Content>
 			<CaptchaVerify
+				ref={captchaVerifyRef}
 				open={captchaVisible}
 				imgSize={{ width: 400, height: 200 }}
 				captchaType={CaptchaType.BlockPuzzle}
-				onSuccess={(verification) => {
+				isLogining={isLogining}
+				onSuccess={async (verification) => {
 					const values = pendingValues ?? form.getFieldsValue(true);
-					submitWithCaptcha(values, verification);
-					setPendingValues(null);
-					setCaptchaVisible(false);
+					await submitWithCaptcha(values, verification);
 				}}
 				onCancel={() => {
+					if (isLogining) {
+						return;
+					}
 					setPendingValues(null);
 					setCaptchaVisible(false);
 				}}
 			/>
-		</>
+		</Layout>
 	);
 }
