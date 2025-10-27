@@ -3,14 +3,12 @@ import { Outlet } from "react-router-dom";
 import NavBar from "./navbar";
 import SideBar from "./sidebar";
 
-const { Header, Sider, Content } = AntdLayout;
+const { Sider, Content } = AntdLayout;
 
 export default function Layout() {
 	return (
 		<AntdLayout className="h-screen w-screen">
-			<Header>
-				<NavBar />
-			</Header>
+			<NavBar />
 			<AntdLayout>
 				<Sider>
 					<SideBar />

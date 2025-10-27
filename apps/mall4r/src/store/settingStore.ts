@@ -15,17 +15,20 @@ type SettingStore = {
 	};
 };
 
+const INITIAL_SETTINGS: SettingsType = {
+	themeMode: ThemeMode.Light,
+};
+
 const useSettingStore = create<SettingStore>()(
 	persist(
 		(set) => ({
-			settings: {
-				themeMode: ThemeMode.Light,
-			},
+			settings: { ...INITIAL_SETTINGS },
 			actions: {
 				setSettings: (settings) => {
 					set({ settings });
 				},
 				clearSettings() {
+					// set({ settings: { ...INITIAL_SETTINGS } });
 					useSettingStore.persist.clearStorage();
 				},
 			},

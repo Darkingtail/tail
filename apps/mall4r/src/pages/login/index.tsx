@@ -1,11 +1,9 @@
 import loginLogo from "@/assets/img/login-logo.png";
 import type { CaptchaVerifyHandle } from "@/components/captcha-verify";
 import CaptchaVerify from "@/components/captcha-verify";
-import ThemeModeSwitch from "@/components/theme-mode-switch";
 import { CaptchaType } from "@/constants/captcha-verify";
 import useUserAccessToken from "@/hooks/useUserAccessToken";
 import type { LoginFormFields } from "@/service/api/login";
-import { loginApi } from "@/service/api/login";
 import useUserStore from "@/store/userStore";
 import { pwdEncrypt } from "@/utils/crypto";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
@@ -31,13 +29,11 @@ export default function Login() {
 		async (values: LoginFormFields, verification: string) => {
 			setIsLogining(true);
 			try {
-				const res = await loginApi.login({
+				await actions.login({
 					userName: values.userName,
 					passWord: pwdEncrypt(values.passWord),
 					captchaVerification: verification,
 				});
-				actions.setUserToken(res);
-				actions.setAuthorization(res.accessToken ?? "");
 				message.success("登录成功");
 				setPendingValues(null);
 				setCaptchaVisible(false);
@@ -130,7 +126,6 @@ export default function Login() {
 				<div className="text=[#999] absolute bottom-[10%] w-full text-center text-xs">
 					Copyright © 2019 广州市蓝海创新科技有限公司
 				</div>
-				<ThemeModeSwitch className="absolute! top-4 right-4 z-10" />
 			</Content>
 			<CaptchaVerify
 				ref={captchaVerifyRef}

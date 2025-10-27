@@ -1,9 +1,10 @@
 import ThemeModeSwitch from "@/components/theme-mode-switch";
-import { loginApi } from "@/service/api/login";
 import useUserStore from "@/store/userStore";
 import type { MenuProps } from "antd";
-import { Button, Dropdown } from "antd";
+import { Button, Dropdown, Layout } from "antd";
 import { useNavigate } from "react-router-dom";
+
+const { Header } = Layout;
 
 export default function NavBar() {
 	const userStore = useUserStore();
@@ -12,11 +13,10 @@ export default function NavBar() {
 	const onClick: MenuProps["onClick"] = async ({ key }) => {
 		if (key !== "1") return;
 		try {
-			await loginApi.logOut({ t: Date.now() });
+			await userStore.actions.logOut({ t: Date.now() });
 		} catch (err) {
 			console.error("logOut failed:", err);
 		} finally {
-			userStore.actions.clearUserToken();
 			navigate("/login", { replace: true });
 		}
 	};
@@ -28,11 +28,14 @@ export default function NavBar() {
 		},
 	];
 	return (
-		<>
-			<ThemeModeSwitch />
-			<Dropdown menu={{ items, onClick }}>
-				<Button type="text">Hover me</Button>
-			</Dropdown>
-		</>
+		<Header className="flex justify-between">
+			<span>mall4j</span>
+			<span>
+				<ThemeModeSwitch />
+				<Dropdown menu={{ items, onClick }}>
+					<Button type="link">Hover me</Button>
+				</Dropdown>
+			</span>
+		</Header>
 	);
 }

@@ -1,7 +1,9 @@
+import useSettingStore from "@/store/settingStore";
+import { ThemeMode } from "@/types/enum";
 import type { CaptchaResponseData } from "@/service/api/captcha-verify";
 import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type BlockPuzzleProps = {
 	data: CaptchaResponseData | null;
@@ -49,9 +51,33 @@ export default function BlockPuzzle({
 	const [pieceOffset, setPieceOffset] = useState(0);
 	const [isDragging, setIsDragging] = useState(false);
 	const [cursor, setCursor] = useState<"pointer" | "grabbing">("pointer");
-	const [finishedSubBarStyle, setFinishedSubBarStyle] = useState<
-		CSSProperties | undefined
-	>();
+	const [finishedWidth, setFinishedWidth] = useState(0);
+
+	const themeMode = useSettingStore((state) => state.settings.themeMode);
+	const isLightMode = themeMode === ThemeMode.Light;
+	const themeColors = useMemo(
+		() =>
+			isLightMode
+				? {
+						barBg: "#ffffff",
+						barBorder: "#d9d9d9",
+						barText: "#333333",
+						finishedBg: "#f0fff0",
+						handleBg: "#ffffff",
+						handleBorder: "#4096ff",
+						handleText: "#4096ff",
+					}
+				: {
+						barBg: "#1f1f1f",
+						barBorder: "#434343",
+						barText: "#e6f4ff",
+						finishedBg: "#112a45",
+						handleBg: "#141414",
+						handleBorder: "#1677ff",
+						handleText: "#1677ff",
+					},
+		[isLightMode],
+	);
 
 	const { originalImageWidth, sliderImageWidth } = (repData ??
 		{}) as CaptchaMeta;
@@ -97,10 +123,7 @@ export default function BlockPuzzle({
 			lastPieceOffsetRef.current = mappedPieceOffset;
 			setPieceOffset(mappedPieceOffset);
 
-			setFinishedSubBarStyle({
-				background: "#f0fff0",
-				width: `${clampedOffset}px`,
-			});
+			setFinishedWidth(clampedOffset);
 		};
 
 		const handlePointerUp = async () => {
@@ -131,16 +154,14 @@ export default function BlockPuzzle({
 
 			try {
 				await onVerify(normalizedPoint);
-			} finally {
+			} catch {
+				// 失败才重置
 				setHandleLeft(0);
 				setPieceOffset(0);
 				handleLeftRef.current = 0;
 				pieceOffsetRef.current = 0;
 				lastPieceOffsetRef.current = 0;
-				setFinishedSubBarStyle({
-					background: undefined,
-					width: 0,
-				});
+				setFinishedWidth(0);
 			}
 		};
 
@@ -187,6 +208,8 @@ export default function BlockPuzzle({
 	};
 
 	const busy = loading || verifying || isLogining;
+	const finishedSubBarBackground =
+		finishedWidth === 0 ? "transparent" : themeColors.finishedBg;
 
 	return (
 		<div className="select-none">
@@ -203,7 +226,13 @@ export default function BlockPuzzle({
 				</Spin>
 			) : (
 				<Spin spinning={busy} indicator={<LoadingOutlined spin />}>
-					<div className="relative mb-4 overflow-hidden rounded border border-gray-200">
+					<div
+						className="relative mb-4 overflow-hidden rounded border border-solid"
+						style={{
+							borderColor: themeColors.barBorder,
+							background: themeColors.barBg,
+						}}
+					>
 						<img
 							className="block h-auto w-full select-none"
 							src={`${IMAGE_PREFIX}${repData.originalImageBase64}`}
@@ -227,28 +256,38 @@ export default function BlockPuzzle({
 
 					<div
 						ref={barRef}
-						className="relative box-border border border-solid border-[#ddd] bg-white text-center"
+						className="relative box-border border border-solid text-center"
 						style={{
 							width: imgSize.width,
 							height: handleHeight,
 							lineHeight: `${handleHeight}px`,
+							background: themeColors.barBg,
+							borderColor: themeColors.barBorder,
+							color: themeColors.barText,
 						}}
 					>
 						<span>{BAR_TEXT}</span>
 						<div
 							role="presentation"
 							className="absolute top-0"
-							style={{ ...finishedSubBarStyle, height: BAR_HEIGHT }}
+							style={{
+								width: finishedWidth,
+								height: BAR_HEIGHT,
+								background: finishedSubBarBackground,
+							}}
 						/>
 						<div
 							role="presentation"
-							className="absolute top-0 box-border flex h-full items-center justify-center border border-solid border-[#4096ff] bg-white text-[#4096ff]"
+							className="absolute top-0 box-border flex h-full items-center justify-center border border-solid"
 							style={{
 								width: handleWidth,
 								height: handleHeight,
 								left: handleLeft,
 								cursor,
 								transition: isDragging ? "none" : "left 0.3s ease",
+								background: themeColors.handleBg,
+								borderColor: themeColors.handleBorder,
+								color: themeColors.handleText,
 							}}
 							onPointerDown={handlePointerDown}
 						>
