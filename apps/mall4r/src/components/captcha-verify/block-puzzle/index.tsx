@@ -1,6 +1,6 @@
+import type { CaptchaResponseData } from "@/service/api/captcha-verify";
 import useSettingStore from "@/store/settingStore";
 import { ThemeMode } from "@/types/enum";
-import type { CaptchaResponseData } from "@/service/api/captcha-verify";
 import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";

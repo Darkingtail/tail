@@ -126,13 +126,15 @@ const CaptchaVerify = forwardRef<CaptchaVerifyHandle, CaptchaVerifyProps>(
 							: verificationPayload;
 						onSuccess(captchaVerification);
 					} else {
-						message.warning(normalizeMessage(response?.repMsg, "验证失败"));
 						await fetchCaptcha();
+						throw new Error(
+							(response?.repMsg || "Verification failed") as string,
+						);
 					}
 				} catch (error) {
-					message.error("验证失败");
-					console.error(error);
+					message.error(normalizeMessage(error, "验证失败"));
 					await fetchCaptcha();
+					return Promise.reject(error);
 				} finally {
 					setVerifying(false);
 				}

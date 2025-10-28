@@ -28,12 +28,14 @@ export default function NavBar() {
 		},
 	];
 	return (
-		<Header className="flex justify-between">
+		<Header className="flex justify-between px-4!">
 			<span>mall4j</span>
 			<span>
 				<ThemeModeSwitch />
 				<Dropdown menu={{ items, onClick }}>
-					<Button type="link">Hover me</Button>
+					<Button type="link" className="ml-4! p-0!">
+						Hover me
+					</Button>
 				</Dropdown>
 			</span>
 		</Header>
