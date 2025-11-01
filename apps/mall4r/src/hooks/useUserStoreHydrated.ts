@@ -1,7 +1,10 @@
-import useUserStore from "@/store/userStore";
+import useUserStore, { type UserStoreState } from "@/store/userStore";
 import { useEffect, useState } from "react";
 
-export default function useUserAccessToken() {
+type Selector<T> = (state: UserStoreState) => T;
+
+export default function useUserStoreHydrated<T>(selector: Selector<T>) {
+	const selectedState = useUserStore(selector);
 	const [isHydrated, setIsHydrated] = useState(
 		() => useUserStore.persist.hasHydrated?.() ?? false,
 	);
@@ -25,6 +28,7 @@ export default function useUserAccessToken() {
 
 	return {
 		isHydrated,
-		accessToken: useUserStore((state) => state.userToken.accessToken),
+		value: selectedState,
 	};
 }
+

@@ -1,59 +1,81 @@
 import ThemeModeSwitch from "@/components/theme-mode-switch";
+import useUserStoreHydrated from "@/hooks/useUserStoreHydrated";
 import useUserStore from "@/store/userStore";
+import { ExclamationCircleFilled } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Button, Dropdown, Layout } from "antd";
-import { useState } from "react";
+import { Button, Dropdown, Layout, Modal } from "antd";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
 export default function NavBar() {
-	const userStore = useUserStore();
+	const actions = useUserStore((state) => state.actions);
+	const { value: username } = useUserStoreHydrated(
+		(state) => state.userInfo.username ?? "",
+	);
+	const [modal, modalContextHolder] = Modal.useModal();
 	const navigate = useNavigate();
 
-	const [modalVisible, setModalVisible] = useState(false);
-
-	const userName = userStore.userInfo.name;
-
-	const onClick: MenuProps["onClick"] = async ({ key }) => {
-		switch (key) {
-			case "1":
+	const handleLogout = useCallback(() => {
+		modal.confirm({
+			title: "退出登录",
+			icon: <ExclamationCircleFilled />,
+			content: "确定要执行退出操作吗？",
+			cancelText: "取消",
+			okText: "确定",
+			onOk: async () => {
 				try {
-					await userStore.actions.logOut({ t: Date.now() });
-				} catch (err) {
-					console.error("logOut failed:", err);
-				} finally {
+					await actions.logOut({ t: Date.now() });
 					navigate("/login", { replace: true });
+				} catch (error) {
+					console.error("logOut failed:", error);
 				}
-				break;
-			case "2":
-				break;
-			default:
-				break;
-		}
-	};
+			},
+		});
+	}, [actions, modal, navigate]);
+
+	const onClick: MenuProps["onClick"] = useCallback(
+		({ key }: { key: string }) => {
+			switch (key) {
+				case "1":
+					// TODO: 打开修改密码弹窗
+					break;
+				case "2":
+					handleLogout();
+					break;
+				default:
+					break;
+			}
+		},
+		[handleLogout],
+	);
 
 	const items: MenuProps["items"] = [
 		{
 			key: "1",
-			label: "Logout",
+			label: "修改密码",
 		},
 		{
 			key: "2",
-			label: "update-password",
+			label: "退出",
 		},
 	];
+
 	return (
-		<Header className="flex justify-between px-4!">
-			<span>mall4j</span>
-			<span>
-				<ThemeModeSwitch />
-				<Dropdown menu={{ items, onClick }}>
-					<Button type="link" className="ml-4! p-0!">
-						{userName}
-					</Button>
-				</Dropdown>
-			</span>
-		</Header>
+		<>
+			{modalContextHolder}
+			<Header className="flex h-12 items-center justify-between px-4!">
+				<span className="text-base font-bold">mall4j</span>
+				<span>
+					<ThemeModeSwitch />
+					<Dropdown menu={{ items, onClick }}>
+						<Button type="link" className="ml-4! p-0!">
+							{username}
+						</Button>
+					</Dropdown>
+				</span>
+			</Header>
+		</>
 	);
 }

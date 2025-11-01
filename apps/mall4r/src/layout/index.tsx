@@ -1,21 +1,25 @@
-import { Layout as AntdLayout } from "antd";
-import { Outlet } from "react-router-dom";
+import useUserStoreHydrated from "@/hooks/useUserStoreHydrated";
+import { LoadingOutlined } from "@ant-design/icons";
+import { Layout as AntdLayout, Spin } from "antd";
+import Content from "./content";
 import NavBar from "./navbar";
 import SideBar from "./sidebar";
 
-const { Sider, Content } = AntdLayout;
-
 export default function Layout() {
-	return (
+	const { isHydrated } = useUserStoreHydrated(() => null);
+	return !isHydrated ? (
+		<Spin
+			tip="Loading..."
+			size="large"
+			fullscreen
+			indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+		/>
+	) : (
 		<AntdLayout className="h-screen w-screen">
 			<NavBar />
 			<AntdLayout>
-				<Sider>
-					<SideBar />
-				</Sider>
-				<Content>
-					<Outlet />
-				</Content>
+				<SideBar />
+				<Content />
 			</AntdLayout>
 		</AntdLayout>
 	);

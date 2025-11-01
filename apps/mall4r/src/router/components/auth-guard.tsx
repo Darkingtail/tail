@@ -1,7 +1,7 @@
-import useUserAccessToken from "@/hooks/useUserAccessToken";
-import { lazy, useEffect } from "react";
+import useUserStoreHydrated from "@/hooks/useUserStoreHydrated";
+import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const PageError = lazy(() => import("@/pages/error/404"));
 
@@ -10,23 +10,16 @@ type Props = {
 };
 
 export default function AuthGuard({ children }: Props) {
-	const navigate = useNavigate();
-
-	const { accessToken, isHydrated } = useUserAccessToken();
-
-	useEffect(() => {
-		if (!isHydrated) {
-			return;
-		}
-
-		if (!accessToken) {
-			// redirect to login page after store is ready
-			navigate("/login", { replace: true });
-		}
-	}, [accessToken, isHydrated, navigate]);
+	const { value: accessToken, isHydrated } = useUserStoreHydrated(
+		(state) => state.userToken.accessToken,
+	);
 
 	if (!isHydrated) {
-		return null;
+		return null; // 或者返回一个 loading spinner
+	}
+
+	if (!accessToken) {
+		return <Navigate to="/login" replace />;
 	}
 
 	return (

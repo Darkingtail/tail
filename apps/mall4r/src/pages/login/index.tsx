@@ -2,7 +2,7 @@ import loginLogo from "@/assets/img/login-logo.png";
 import type { CaptchaVerifyHandle } from "@/components/captcha-verify";
 import CaptchaVerify from "@/components/captcha-verify";
 import { CaptchaType } from "@/constants/captcha-verify";
-import useUserAccessToken from "@/hooks/useUserAccessToken";
+import useUserStoreHydrated from "@/hooks/useUserStoreHydrated";
 import type { LoginFormFields } from "@/service/api/login";
 import useUserStore from "@/store/userStore";
 import { pwdEncrypt } from "@/utils/crypto";
@@ -16,7 +16,9 @@ const { Content } = Layout;
 export default function Login() {
 	const [form] = Form.useForm<LoginFormFields>();
 	const actions = useUserStore((state) => state.actions);
-	const { accessToken, isHydrated } = useUserAccessToken();
+	const { value: accessToken, isHydrated } = useUserStoreHydrated(
+		(state) => state.userToken.accessToken,
+	);
 	const [captchaVisible, setCaptchaVisible] = useState(false);
 	const [pendingValues, setPendingValues] = useState<LoginFormFields | null>(
 		null,

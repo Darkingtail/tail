@@ -24,20 +24,8 @@ export interface LoginResponse {
 	[key: string]: unknown;
 }
 
-export interface UserInfo {
-	id: number;
-	name: string;
-	userId: string;
-	shopId: string;
-	mobile: string;
-}
-export interface FetchUserInfoRequestPayload {
-	t: number;
-}
-
 const LOGIN_PATH = "/adminLogin";
 const LOGOUT_PATH = "/logOut";
-const GET_USER_INFO_PATH = "/sys/user/info";
 
 export function createLoginApi(client: HttpClient = httpClient) {
 	return {
@@ -52,11 +40,6 @@ export function createLoginApi(client: HttpClient = httpClient) {
 			config?: MallAxiosRequestConfig,
 		): Promise<T> {
 			return client.post<T, T>(LOGOUT_PATH, data, config);
-		},
-		fetchUserInfo<T = UserInfo>(
-			params: FetchUserInfoRequestPayload,
-		): Promise<T> {
-			return client.get<T, T>(GET_USER_INFO_PATH, { params });
 		},
 	};
 }
