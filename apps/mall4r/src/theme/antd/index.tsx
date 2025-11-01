@@ -3,11 +3,7 @@ import { ThemeMode } from "@/types/enum";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { ConfigProvider, theme } from "antd";
 import "antd/dist/reset.css";
-import {
-	customComponentConfig,
-	customThemeTokenConfig,
-	themeModeToken,
-} from "./theme";
+import { customThemeTokenConfig, themeModeToken } from "./theme";
 
 type Props = {
 	children: React.ReactNode;
@@ -29,7 +25,6 @@ export default function AntdConfig({ children }: Props) {
 					...themeModeToken[settings.themeMode].token,
 				},
 				components: {
-					...customComponentConfig,
 					...themeModeToken[settings.themeMode].components,
 				},
 				algorithm,
