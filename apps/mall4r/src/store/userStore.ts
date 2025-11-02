@@ -84,6 +84,8 @@ const useUserStore = create<UserStore>()(
 						} finally {
 							get().actions.clearUserToken();
 							get().actions.clearUserInfo();
+							const routeActions = useRouteStore.getState().actions;
+							routeActions.reset();
 							Cookies.remove("Authorization");
 						}
 					},
