@@ -1,19 +1,24 @@
 import type { MenuItem } from "@/service/api/user";
-import type { ComponentType } from "react";
+import { type ComponentType, createElement } from "react";
 import type { RouteObject } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 type MenuTreeItem = MenuItem & { list?: MenuTreeItem[] | null };
+
 type ModuleLoader = () => Promise<{ default: ComponentType<any> }>;
+
 type RouteHandle = {
 	menuId: number;
 	parentId: number;
 	title: string;
 	icon?: string | null;
 	perms?: string;
-	order?: number;
+	order: number;
 	isExternal: boolean;
+	isGroup: boolean;
+	isFallback: boolean;
 	iframeUrl?: string;
-	rawUrl: string;
+	rawUrl?: string;
 };
 
 const pageModules = import.meta.glob<ModuleLoader>("@/pages/**/index.tsx");
@@ -22,40 +27,98 @@ const NOT_FOUND_LOADER = async () => import("@/pages/error/404");
 const IFRAME_PAGE_LOADER = async () => import("@/pages/iframe");
 
 export function buildRoutesFromMenu(menuList: MenuItem[]): RouteObject[] {
-	const dynamicRoutes: RouteObject[] = [];
+	return sortMenu(menuList as MenuTreeItem[])
+		.map((item) => buildRoute(item, undefined))
+		.filter((route): route is RouteObject => route !== null);
+}
 
-	const traverse = (items: MenuTreeItem[]) => {
-		for (const item of items) {
-			const children = getChildren(item);
+function buildRoute(
+	item: MenuTreeItem,
+	parentPath: string | undefined,
+): RouteObject | null {
+	const rawUrl = typeof item.url === "string" ? item.url.trim() : "";
+	const isExternal = rawUrl ? isHttpUrl(rawUrl) : false;
+	const normalizedPath =
+		!isExternal && rawUrl ? normalizePath(rawUrl) : undefined;
+	const nextParentPath = normalizedPath ?? parentPath;
 
-			if (children.length > 0) {
-				traverse(children);
-				continue;
-			}
+	const childRoutes = sortMenu(getChildren(item))
+		.map((child) => buildRoute(child, nextParentPath))
+		.filter((route): route is RouteObject => route !== null);
 
-			if (!item.url || !item.url.trim()) {
-				continue;
-			}
+	if (childRoutes.length > 0) {
+		const { path, index } = deriveSegment(normalizedPath, parentPath);
+		const groupRoute: RouteObject = {
+			children: childRoutes,
+			handle: buildHandle(item, {
+				isGroup: true,
+				rawUrl: rawUrl || undefined,
+			}),
+			element: createElement(Outlet),
+		};
 
-			// 2 代表按钮之类的操作点，不需要生成路由
-			if (item.type === 2) {
-				continue;
-			}
-
-			const rawUrl = item.url.trim();
-
-			if (isHttpUrl(rawUrl)) {
-				dynamicRoutes.push(createExternalRoute(item, rawUrl));
-				continue;
-			}
-
-			dynamicRoutes.push(createInternalRoute(item, rawUrl));
+		if (index) {
+			groupRoute.index = true;
+		} else if (path) {
+			groupRoute.path = path;
 		}
+
+		return groupRoute;
+	}
+
+	if (!rawUrl || item.type === 2) {
+		return null;
+	}
+
+	if (isExternal) {
+		return createExternalRoute(item, rawUrl);
+	}
+
+	if (!normalizedPath) {
+		return null;
+	}
+
+	return createInternalLeafRoute(item, normalizedPath, rawUrl, parentPath);
+}
+
+function createInternalLeafRoute(
+	item: MenuTreeItem,
+	normalizedPath: string,
+	rawUrl: string,
+	parentPath: string | undefined,
+): RouteObject {
+	const moduleKey = `@/pages/${normalizedPath}/index.tsx`;
+	const loader = pageModules[moduleKey];
+	const { path, index } = deriveSegment(normalizedPath, parentPath);
+
+	const route: RouteObject = {
+		handle: buildHandle(item, {
+			rawUrl,
+			isFallback: !loader,
+		}),
 	};
 
-	traverse(menuList as MenuTreeItem[]);
+	if (index) {
+		route.index = true;
+	} else {
+		route.path = path ?? normalizedPath;
+	}
 
-	return dynamicRoutes;
+	route.lazy = buildLazy(loader ?? NOT_FOUND_LOADER);
+
+	return route;
+}
+
+function createExternalRoute(item: MenuTreeItem, rawUrl: string): RouteObject {
+	return {
+		path: `i-${item.menuId}`,
+		lazy: buildLazy(IFRAME_PAGE_LOADER),
+		handle: buildHandle(item, {
+			isExternal: true,
+			iframeUrl: rawUrl,
+			rawUrl,
+		}),
+	};
 }
 
 function getChildren(item: MenuTreeItem): MenuTreeItem[] {
@@ -70,56 +133,39 @@ function getChildren(item: MenuTreeItem): MenuTreeItem[] {
 	return [];
 }
 
-function createInternalRoute(item: MenuTreeItem, rawUrl: string): RouteObject {
-	const path = normalizePath(rawUrl);
+function sortMenu<T extends { orderNum: number; menuId: number }>(
+	items: T[],
+): T[] {
+	return [...items].sort((a, b) => {
+		if (a.orderNum !== b.orderNum) {
+			return a.orderNum - b.orderNum;
+		}
+
+		return a.menuId - b.menuId;
+	});
+}
+
+function deriveSegment(
+	path: string | undefined,
+	parentPath: string | undefined,
+): { path?: string; index?: boolean } {
 	if (!path) {
-		return createFallbackRoute(item, rawUrl);
+		return {};
 	}
 
-	const moduleKey = `@/pages/${path}/index.tsx`;
-	const loader = pageModules[moduleKey];
-
-	if (!loader) {
-		return createFallbackRoute(item, rawUrl, path);
+	if (!parentPath) {
+		return { path };
 	}
 
-	return {
-		path,
-		lazy: buildLazy(loader),
-		handle: buildHandle(item, {
-			isExternal: false,
-			rawUrl,
-		}),
-	};
-}
+	if (path === parentPath) {
+		return { index: true };
+	}
 
-function createExternalRoute(item: MenuTreeItem, rawUrl: string): RouteObject {
-	const path = `i-${item.menuId}`;
+	if (path.startsWith(`${parentPath}/`)) {
+		return { path: path.slice(parentPath.length + 1) };
+	}
 
-	return {
-		path,
-		lazy: buildLazy(IFRAME_PAGE_LOADER),
-		handle: buildHandle(item, {
-			isExternal: true,
-			iframeUrl: rawUrl,
-			rawUrl,
-		}),
-	};
-}
-
-function createFallbackRoute(
-	item: MenuTreeItem,
-	rawUrl: string,
-	path: string = normalizePath(rawUrl) || `fallback-${item.menuId}`,
-): RouteObject {
-	return {
-		path,
-		lazy: buildLazy(NOT_FOUND_LOADER),
-		handle: buildHandle(item, {
-			isExternal: false,
-			rawUrl,
-		}),
-	};
+	return { path };
 }
 
 function buildLazy(loader: ModuleLoader) {
@@ -131,10 +177,7 @@ function buildLazy(loader: ModuleLoader) {
 
 function buildHandle(
 	item: MenuTreeItem,
-	extra: Omit<
-		RouteHandle,
-		"menuId" | "parentId" | "title" | "icon" | "perms" | "order"
-	>,
+	extra: Partial<RouteHandle> = {},
 ): RouteHandle {
 	return {
 		menuId: item.menuId,
@@ -143,6 +186,10 @@ function buildHandle(
 		icon: item.icon,
 		perms: item.perms,
 		order: item.orderNum,
+		isExternal: false,
+		isGroup: false,
+		isFallback: false,
+		rawUrl: item.url ?? "",
 		...extra,
 	};
 }
