@@ -1,5 +1,7 @@
 import useUserStoreHydrated from "@/hooks/useUserStoreHydrated";
-import { lazy } from "react";
+import useUserStore from "@/store/userStore";
+import Cookies from "js-cookie";
+import { lazy, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Navigate } from "react-router-dom";
 
@@ -13,6 +15,15 @@ export default function AuthGuard({ children }: Props) {
 	const { value: accessToken, isHydrated } = useUserStoreHydrated(
 		(state) => state.userToken.accessToken,
 	);
+	const { actions } = useUserStore();
+
+	useEffect(() => {
+		if (!isHydrated) return;
+		if (!Cookies.get("Authorization") && accessToken) {
+			actions.clearUserToken();
+			actions.clearUserInfo();
+		}
+	}, [isHydrated, accessToken, actions]);
 
 	if (!isHydrated) {
 		return null; // 或者返回一个 loading spinner
