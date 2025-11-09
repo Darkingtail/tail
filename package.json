@@ -97,7 +97,7 @@
 		"vite-tsconfig-paths": "^5.0.1"
 	},
 	"author": "https://github.com/Darkingtail",
-	"packageManager": "pnpm@9.14.4",
+	"packageManager": "pnpm@10.16.1",
 	"msw": {
 		"workerDirectory": "public"
 	}
