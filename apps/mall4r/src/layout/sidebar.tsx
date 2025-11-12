@@ -2,13 +2,20 @@ import useRouteStore from "@/store/routerStore";
 import useSettingStore from "@/store/settingStore";
 import { ThemeMode } from "@/types/enum";
 import { Layout, Menu, type MenuProps, theme } from "antd";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import type { RouteObject } from "react-router-dom";
+
+type MenuHandle = {
+	menuId: number;
+	parentId: number;
+	title: string;
+	icon?: string | null;
+	[key: string]: unknown;
+};
 
 export default function SideBar() {
 	const themeMode = useSettingStore((state) => state.settings.themeMode);
 	const routes = useRouteStore((state) => state.routes);
-	const [menu, setMenu] = useState([]);
 	const { token } = theme.useToken();
 	console.log("routes:", routes);
 
@@ -16,21 +23,27 @@ export default function SideBar() {
 		console.log("click", e);
 	};
 
-	useEffect(() => {
-		const generateMenu = (routes: RouteObject[]) => {
-			return routes.map((i) => {
-				if (i.children && i.children.length > 0) {
-					i.children = generateMenu(i.children);
-				}
+	const menuItems = useMemo(() => {
+		type MenuItem = NonNullable<MenuProps["items"]>[number];
+
+		const generateMenu = (items: RouteObject[]): MenuProps["items"] => {
+			return items.map<MenuItem>((route) => {
+				const handle = route.handle as MenuHandle | undefined;
+				const key =
+					route.id ??
+					route.path ??
+					(handle?.menuId ? String(handle.menuId) : crypto.randomUUID());
+
 				return {
-					...i,
-					title: i.handle.title,
+					key,
+					label: handle?.title ?? route.path ?? "未命名菜单",
+					children: route.children ? generateMenu(route.children) : undefined,
 				};
 			});
 		};
-		console.log("generateMenu(routes):", generateMenu(routes));
-		// setMenu( generateMenu(routes))
-	});
+
+		return generateMenu(routes);
+	}, [routes]);
 
 	return (
 		<Layout.Sider
@@ -40,7 +53,7 @@ export default function SideBar() {
 				background: token.colorBgElevated,
 			}}
 		>
-			<Menu onClick={onClick} mode="vertical" items={menu} />
+			<Menu onClick={onClick} mode="vertical" items={menuItems} />
 		</Layout.Sider>
 	);
 }
