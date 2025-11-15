@@ -36,7 +36,14 @@ const useRouteStore = create<RouteStore>()(
 		},
 	),
 );
+/*
+  1. useRouteStore.persist?.onFinishHydration?.(...) 是 zustand persist 中的 “hydrate 完成” 钩子。也就是说，当持久化存储
+    （localStorage）里的数据被异步取回并写回 store 后，会触发这个回调，我们可以在这里对恢复的状态做二次处理。
+  2. 回调里面重新取出当前的 menuList 与 isLoaded，再调用 ensureHomeMenu 补一遍首页菜单项，确保即使本地存储的菜单列表里没
+    有 /home，hydrate 完成后仍然会重新把首页插入，并将 isLoaded 标记为已加载。
 
+  简而言之：这是用来在持久化恢复的时候，再次兜底补齐首页菜单，避免刷新后菜单丢失或顺序错乱。
+*/
 useRouteStore.persist?.onFinishHydration?.(() => {
 	const { menuList, isLoaded } = useRouteStore.getState();
 	if (menuList.length > 0) {

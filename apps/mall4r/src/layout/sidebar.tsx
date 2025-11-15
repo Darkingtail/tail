@@ -5,7 +5,7 @@ import { ThemeMode } from "@/types/enum";
 import { Layout, Menu, type MenuProps, theme } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { RouteObject } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type MenuHandle = {
 	menuId: number;
@@ -18,13 +18,18 @@ type MenuHandle = {
 export default function SideBar() {
 	const themeMode = useSettingStore((state) => state.settings.themeMode);
 	const menuList = useRouteStore((state) => state.menuList);
-	const routes = useMemo(() => buildRoutesFromMenu(menuList), [menuList]);
-	const navigate = useNavigate();
-	const { token } = theme.useToken();
-	console.log("routes:", routes);
 
 	const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 	const [stateOpenKeys, setStateOpenKeys] = useState<string[]>([]);
+
+	const routes = useMemo(() => buildRoutesFromMenu(menuList), [menuList]);
+	console.log("routes:", routes);
+
+	const navigate = useNavigate();
+
+	const location = useLocation();
+
+	const { token } = theme.useToken();
 
 	const mergePaths = (base: string, segment: string) => {
 		const normalizedBase = base.replace(/\/+$/, "");
@@ -125,6 +130,30 @@ export default function SideBar() {
 			setSelectedKeys([innermostKey]);
 		}
 	}, [menuItems]);
+	// codex resume 019a863a-22bc-7831-a58a-2a07f81cbc7d
+	useEffect(() => {
+		const findKeyByPath = (
+			routes: RouteObject[],
+			pathname: string,
+		): string | undefined => {
+			const path = pathname.slice(1);
+			for (const item of routes) {
+				if (item.path === path) {
+					return path;
+				}
+				if (item.children && item.children.length > 0) {
+					const route = item.children.find((i) => i.path === path);
+					return route ? path : findKeyByPath(item.children, pathname);
+				}
+				return undefined;
+			}
+			return undefined;
+		};
+		const key = findKeyByPath(routes, location.pathname);
+		if (key) {
+			setSelectedKeys([String(key)]);
+		}
+	}, [routes, location]);
 
 	return (
 		<Layout.Sider

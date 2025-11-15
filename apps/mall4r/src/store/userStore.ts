@@ -90,13 +90,16 @@ const useUserStore = create<UserStore>()(
 							get().actions.setAuthorization(response.accessToken ?? "");
 							get().actions.setUserInfo(userInfo);
 							get().actions.setAuthorities(navInfo.authorities);
-							// 3. 鏇存柊璺敱 store锛堝崈涓囧埆鐢?useRouteStore()锛岃鐢?getState锛?
-							// - useRouteStore.getState() 鏄?zustand hook 涓婃寕鐨勯潤鎬佹柟娉曪紝涓嶅彈 鈥淗ook 鍙兘鍦ㄧ粍
-							//   浠堕噷鐢ㄢ€?鐨勯檺鍒躲€?
-							// - 鎶?actions 鍙栧嚭鏉ュ鐢ㄥ嵆鍙紙閬垮厤姣忔閮?getState()锛夈€?
-							// - 纭繚 routerStore 娌℃湁鍥炲ご import userStore锛岄槻姝㈠惊鐜緷璧栥€?
-							// - 濡傛灉 setMenuList 闇€瑕佺殑鏄浆鎹㈠悗鐨?RouteObject[]锛屽厛鍦?userStore 閲岃皟鐢ㄤ綘鍐欑殑
-							//   buildRoutesFromMenu 鍐嶅杩涘幓銆?
+							/* 	1. 路由对象里有函数，无法持久化
+											buildRoutesFromMenu 生成的 RouteObject 会包含 lazy、element 等函数。把这些放到 store 并持久化到 localStorage 会因为
+											JSON 序列化而丢失函数，刷新后就变成“没有 component 的空路由”，导致 404。只存纯数据（menuList）更安全。
+										2. 在组件层算路由，随用随建
+											sidebar、App 等组件根据最新的 menuList 调 buildRoutesFromMenu，能确保每次渲染拿到干净的路由树，不受缓存影响。也就没
+											有“刷新后菜单/路由丢失”的问题。
+										3. store 保持简单、易于同步
+											routerStore 只负责存取菜单列表和是否加载完成，避免担心函数在 hydrate 后不一致。同时也让其他组件想要路由时可以直接在
+											本地用 buildRoutesFromMenu 生成，逻辑上更可控。
+							*/
 							const routeActions = useRouteStore.getState().actions;
 							routeActions.setMenuList(navInfo.menuList);
 							Cookies.set("Authorization", response.accessToken ?? "");
@@ -152,5 +155,3 @@ const useUserStore = create<UserStore>()(
 );
 
 export default useUserStore;
-
-
