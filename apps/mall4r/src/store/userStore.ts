@@ -1,5 +1,4 @@
-import { buildRoutesFromMenu } from "@/router/utils/buildDynamicRoutes";
-import {
+﻿import {
 	type LoginRequestPayload,
 	type LoginResponse,
 	type LogoutRequestPayload,
@@ -26,7 +25,7 @@ type UserStore = {
 	authorities: string[];
 	userToken: Partial<LoginResponse>;
 	Authorization: string;
-	// 使用 actions 命名空间来存放所有的 action
+	// 浣跨敤 actions 鍛藉悕绌洪棿鏉ュ瓨鏀炬墍鏈夌殑 action
 	actions: {
 		login: (form: LoginRequestPayload) => Promise<void>;
 		logOut: (data: LogoutRequestPayload) => Promise<void>;
@@ -43,31 +42,31 @@ export type UserStoreState = UserStore;
 
 /*
 
-useRouteStore 是 zustand 返回的“hook 形态” store，React 会把它当作一个 Hook 来
-  处理。所以：
+useRouteStore 鏄?zustand 杩斿洖鐨勨€渉ook 褰㈡€佲€?store锛孯eact 浼氭妸瀹冨綋浣滀竴涓?Hook 鏉?
+  澶勭悊銆傛墍浠ワ細
 
-  - 任何 useXXX Hook（包括 zustand 的）都只能在 React 组件或者其他 Hook 里调用；
-    你在 create() 的工厂函数里去 useRouteStore()，相当于在普通函数里调用 Hook，
-    React 直接报错。
-  - 即便不报错，useRouteStore() 返回的是当前订阅的切片，它会被锁在创建时的闭包
-    里，后续状态更新拿不到（永远是旧值）。
-  - store 之间这么互调，还很容易形成循环依赖：userStore 里 import
-    useRouteStore，routerStore 又间接引 userStore，模块初始化就死锁了。
+  - 浠讳綍 useXXX Hook锛堝寘鎷?zustand 鐨勶級閮藉彧鑳藉湪 React 缁勪欢鎴栬€呭叾浠?Hook 閲岃皟鐢紱
+    浣犲湪 create() 鐨勫伐鍘傚嚱鏁伴噷鍘?useRouteStore()锛岀浉褰撲簬鍦ㄦ櫘閫氬嚱鏁伴噷璋冪敤 Hook锛?
+    React 鐩存帴鎶ラ敊銆?
+  - 鍗充究涓嶆姤閿欙紝useRouteStore() 杩斿洖鐨勬槸褰撳墠璁㈤槄鐨勫垏鐗囷紝瀹冧細琚攣鍦ㄥ垱寤烘椂鐨勯棴鍖?
+    閲岋紝鍚庣画鐘舵€佹洿鏂版嬁涓嶅埌锛堟案杩滄槸鏃у€硷級銆?
+  - store 涔嬮棿杩欎箞浜掕皟锛岃繕寰堝鏄撳舰鎴愬惊鐜緷璧栵細userStore 閲?import
+    useRouteStore锛宺outerStore 鍙堥棿鎺ュ紩 userStore锛屾ā鍧楀垵濮嬪寲灏辨閿佷簡銆?
 
-  Zustand 官方的跨 store 用法，是利用返回 hook 上挂着的静态方法，例如：
+  Zustand 瀹樻柟鐨勮法 store 鐢ㄦ硶锛屾槸鍒╃敤杩斿洖 hook 涓婃寕鐫€鐨勯潤鎬佹柟娉曪紝渚嬪锛?
 
   const routeActions = useRouteStore.getState().actions;
-  routeActions.setRoutes(...);
+  routeActions.setMenuList(...);
 
-  getState()、setState()、subscribe() 这些都不触发 React Hook 的限制，也不会陷入
-  闭包/循环依赖的问题。保持这种方式就 OK 了。
+  getState()銆乻etState()銆乻ubscribe() 杩欎簺閮戒笉瑙﹀彂 React Hook 鐨勯檺鍒讹紝涔熶笉浼氶櫡鍏?
+  闂寘/寰幆渚濊禆鐨勯棶棰樸€備繚鎸佽繖绉嶆柟寮忓氨 OK 浜嗐€?
 
-	create() 返回的 useRouteStore 本质上就是一个 React Hook：它内部要调用
-  useSyncExternalStore 来把状态订阅到组件生命周期。所以你一旦在组件外执行
-  useRouteStore()，React 在运行时就会抛出 “Invalid hook call”——不是因为名字叫
-  use，而是因为真的调用了 Hook 却不在组件/自定义 Hook 里。eslint 的 rules-of-
-  hooks 之所以也报警，是因为它只靠命名约定来静态检查，看到 useRouteStore() 的调
-  用就默认你在用 Hook，两边配合确保我们不会在错的场景下调用。
+	create() 杩斿洖鐨?useRouteStore 鏈川涓婂氨鏄竴涓?React Hook锛氬畠鍐呴儴瑕佽皟鐢?
+  useSyncExternalStore 鏉ユ妸鐘舵€佽闃呭埌缁勪欢鐢熷懡鍛ㄦ湡銆傛墍浠ヤ綘涓€鏃﹀湪缁勪欢澶栨墽琛?
+  useRouteStore()锛孯eact 鍦ㄨ繍琛屾椂灏变細鎶涘嚭 鈥淚nvalid hook call鈥濃€斺€斾笉鏄洜涓哄悕瀛楀彨
+  use锛岃€屾槸鍥犱负鐪熺殑璋冪敤浜?Hook 鍗翠笉鍦ㄧ粍浠?鑷畾涔?Hook 閲屻€俥slint 鐨?rules-of-
+  hooks 涔嬫墍浠ヤ篃鎶ヨ锛屾槸鍥犱负瀹冨彧闈犲懡鍚嶇害瀹氭潵闈欐€佹鏌ワ紝鐪嬪埌 useRouteStore() 鐨勮皟
+  鐢ㄥ氨榛樿浣犲湪鐢?Hook锛屼袱杈归厤鍚堢‘淇濇垜浠笉浼氬湪閿欑殑鍦烘櫙涓嬭皟鐢ㄣ€?
 
 
 
@@ -91,17 +90,15 @@ const useUserStore = create<UserStore>()(
 							get().actions.setAuthorization(response.accessToken ?? "");
 							get().actions.setUserInfo(userInfo);
 							get().actions.setAuthorities(navInfo.authorities);
-							// 3. 更新路由 store（千万别用 useRouteStore()，要用 getState）
-							// - useRouteStore.getState() 是 zustand hook 上挂的静态方法，不受 “Hook 只能在组
-							//   件里用” 的限制。
-							// - 把 actions 取出来复用即可（避免每次都 getState()）。
-							// - 确保 routerStore 没有回头 import userStore，防止循环依赖。
-							// - 如果 setRoutes 需要的是转换后的 RouteObject[]，先在 userStore 里调用你写的
-							//   buildRoutesFromMenu 再塞进去。
+							// 3. 鏇存柊璺敱 store锛堝崈涓囧埆鐢?useRouteStore()锛岃鐢?getState锛?
+							// - useRouteStore.getState() 鏄?zustand hook 涓婃寕鐨勯潤鎬佹柟娉曪紝涓嶅彈 鈥淗ook 鍙兘鍦ㄧ粍
+							//   浠堕噷鐢ㄢ€?鐨勯檺鍒躲€?
+							// - 鎶?actions 鍙栧嚭鏉ュ鐢ㄥ嵆鍙紙閬垮厤姣忔閮?getState()锛夈€?
+							// - 纭繚 routerStore 娌℃湁鍥炲ご import userStore锛岄槻姝㈠惊鐜緷璧栥€?
+							// - 濡傛灉 setMenuList 闇€瑕佺殑鏄浆鎹㈠悗鐨?RouteObject[]锛屽厛鍦?userStore 閲岃皟鐢ㄤ綘鍐欑殑
+							//   buildRoutesFromMenu 鍐嶅杩涘幓銆?
 							const routeActions = useRouteStore.getState().actions;
 							routeActions.setMenuList(navInfo.menuList);
-							routeActions.setRoutes(buildRoutesFromMenu(navInfo.menuList));
-							// routeActions.setRoutes(buildRoutes(navInfo.menuList));
 							Cookies.set("Authorization", response.accessToken ?? "");
 							return Promise.resolve();
 						} catch (error) {
@@ -112,7 +109,7 @@ const useUserStore = create<UserStore>()(
 						try {
 							await loginApi.logOut(data);
 						} catch {
-							// 即使登出接口请求失败也继续清理本地状态
+							// 鍗充娇鐧诲嚭鎺ュ彛璇锋眰澶辫触涔熺户缁竻鐞嗘湰鍦扮姸鎬?
 						} finally {
 							get().actions.clearUserToken();
 							get().actions.clearUserInfo();
@@ -155,3 +152,5 @@ const useUserStore = create<UserStore>()(
 );
 
 export default useUserStore;
+
+

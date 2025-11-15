@@ -22,6 +22,15 @@ type RouteHandle = {
 };
 
 const pageModules = import.meta.glob<ModuleLoader>("@/pages/**/index.tsx");
+const pageModuleMap = new Map<string, ModuleLoader>();
+
+for (const [key, loader] of Object.entries(pageModules)) {
+	const normalizedKey = key
+		.replace(/\\/g, "/")
+		.replace(/^.*\/pages\//, "")
+		.replace(/\/index\.tsx$/, "");
+	pageModuleMap.set(normalizedKey, loader);
+}
 
 const NOT_FOUND_LOADER = async () => import("@/pages/error/404");
 const IFRAME_PAGE_LOADER = async () => import("@/pages/iframe");
@@ -87,8 +96,7 @@ function createInternalLeafRoute(
 	rawUrl: string,
 	parentPath: string | undefined,
 ): RouteObject {
-	const moduleKey = `@/pages/${normalizedPath}/index.tsx`;
-	const loader = pageModules[moduleKey];
+	const loader = pageModuleMap.get(normalizedPath);
 	const { path, index } = deriveSegment(normalizedPath, parentPath);
 
 	const route: RouteObject = {
@@ -100,8 +108,8 @@ function createInternalLeafRoute(
 
 	if (index) {
 		route.index = true;
-	} else {
-		route.path = path ?? normalizedPath;
+	} else if (path) {
+		route.path = path;
 	}
 
 	route.lazy = buildLazy(loader ?? NOT_FOUND_LOADER);
@@ -149,6 +157,7 @@ function deriveSegment(
 	path: string | undefined,
 	parentPath: string | undefined,
 ): { path?: string; index?: boolean } {
+	console.log("path parentPath:", path, parentPath);
 	if (!path) {
 		return {};
 	}
@@ -171,6 +180,7 @@ function deriveSegment(
 function buildLazy(loader: ModuleLoader) {
 	return async () => {
 		const module = await loader();
+		console.log("module:", module);
 		return { Component: module.default };
 	};
 }

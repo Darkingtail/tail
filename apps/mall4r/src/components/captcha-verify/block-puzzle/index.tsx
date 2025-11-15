@@ -97,6 +97,18 @@ export default function BlockPuzzle({
 	const pieceWidth = Math.max(1, Math.round(baseSliderWidth * scaleX));
 
 	useEffect(() => {
+		// reset slider and piece offsets whenever captcha data refreshes
+		setHandleLeft(0);
+		setPieceOffset(0);
+		setFinishedWidth(0);
+		setIsDragging(false);
+		setCursor("pointer");
+		handleLeftRef.current = 0;
+		pieceOffsetRef.current = 0;
+		lastPieceOffsetRef.current = 0;
+	}, [repData, imgSize.width]);
+
+	useEffect(() => {
 		if (!isDragging) {
 			return;
 		}

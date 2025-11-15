@@ -10,7 +10,7 @@ export default function Error404() {
 				navigator("/home", { replace: true });
 			}}
 		>
-			back to home
+			404 back to home
 		</Button>
 	);
 }
