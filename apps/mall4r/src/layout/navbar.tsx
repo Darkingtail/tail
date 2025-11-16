@@ -65,7 +65,7 @@ export default function NavBar() {
 	return (
 		<>
 			{modalContextHolder}
-			<Header className="flex h-12 items-center justify-between px-4!">
+			<Header className="flex h-12 items-center justify-between border-b border-gray-200 px-4!">
 				<span className="text-base font-bold">mall4j</span>
 				<span>
 					<ThemeModeSwitch />

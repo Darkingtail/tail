@@ -1,7 +1,7 @@
 import Router from "@/router";
 import { buildRoutesFromMenu } from "@/router/utils/buildDynamicRoutes";
 import AntdConfig from "@/theme/antd";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import useRouteStore from "./store/routerStore";
 
@@ -15,7 +15,9 @@ function App() {
 		<>
 			<AntdConfig>
 				<ErrorBoundary fallback={<div>Something went wrong</div>}>
-					<Router dynamicRoutes={routes} />
+					<Suspense fallback={<div>Loading...</div>}>
+						<Router dynamicRoutes={routes} />
+					</Suspense>
 				</ErrorBoundary>
 			</AntdConfig>
 		</>

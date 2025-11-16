@@ -176,7 +176,6 @@ function deriveSegment(
 	path: string | undefined,
 	parentPath: string | undefined,
 ): { path?: string; index?: boolean } {
-	console.log("path parentPath:", path, parentPath);
 	if (!path) {
 		return {};
 	}
@@ -199,7 +198,6 @@ function deriveSegment(
 function buildLazy(loader: ModuleLoader) {
 	return async () => {
 		const module = await loader();
-		console.log("module:", module);
 		return { Component: module.default };
 	};
 }

@@ -62,12 +62,63 @@ const HOME_MENU_ITEM: MenuItem = {
 	name: "首页",
 	parentId: 0,
 	parentName: null,
-	url: "/home",
+	url: "home",
 	icon: null,
-	orderNum: -1,
+	orderNum: -2,
 	perms: "",
 	type: 1,
 	list: null,
+};
+
+const NESTED_MENU_ITEM: MenuItem = {
+	menuId: 900,
+	name: "嵌套路由",
+	parentId: 0,
+	parentName: null,
+	url: "",
+	icon: null,
+	orderNum: 900,
+	perms: "",
+	type: 1,
+	list: [
+		{
+			menuId: 901,
+			name: "嵌套路由1",
+			parentId: 900,
+			parentName: "嵌套路由",
+			url: "",
+			icon: null,
+			orderNum: 1,
+			perms: "",
+			type: 1,
+			list: [
+				{
+					menuId: 902,
+					name: "测试用户",
+					parentId: 901,
+					parentName: "嵌套路由2",
+					url: "nest/nest1/testUser",
+					icon: null,
+					orderNum: 1,
+					perms: "",
+					type: 1,
+					list: null,
+				},
+			],
+		},
+		{
+			menuId: 903,
+			name: "嵌套路由2",
+			parentId: 900,
+			parentName: "嵌套路由",
+			url: "nest/nest2",
+			icon: null,
+			orderNum: 2,
+			perms: "",
+			type: 1,
+			list: null,
+		},
+	],
 };
 
 function normalizeMenuUrl(url?: string | null) {
@@ -82,5 +133,5 @@ function ensureHomeMenu(menuList: MenuItem[]): MenuItem[] {
 		return menuList;
 	}
 
-	return [{ ...HOME_MENU_ITEM }, ...menuList];
+	return [{ ...HOME_MENU_ITEM }, { ...NESTED_MENU_ITEM }, ...menuList];
 }

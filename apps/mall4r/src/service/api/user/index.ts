@@ -10,7 +10,7 @@ export interface UserInfo {
 
 export interface MenuItem {
 	icon: string | null;
-	list: string | null;
+	list: MenuItem[] | null;
 	menuId: number;
 	name: string;
 	orderNum: number;

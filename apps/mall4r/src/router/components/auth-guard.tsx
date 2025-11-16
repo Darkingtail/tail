@@ -1,4 +1,5 @@
 import useUserStoreHydrated from "@/hooks/useUserStoreHydrated";
+import useRouteStore from "@/store/routerStore";
 import useUserStore from "@/store/userStore";
 import Cookies from "js-cookie";
 import { lazy, useEffect } from "react";
@@ -17,13 +18,16 @@ export default function AuthGuard({ children }: Props) {
 	);
 	const { actions } = useUserStore();
 
+	const routeStore = useRouteStore();
+
 	useEffect(() => {
 		if (!isHydrated) return;
 		if (!Cookies.get("Authorization") && accessToken) {
 			actions.clearUserToken();
 			actions.clearUserInfo();
+			routeStore.actions.reset();
 		}
-	}, [isHydrated, accessToken, actions]);
+	}, [isHydrated, accessToken, actions, routeStore]);
 
 	if (!isHydrated) {
 		return null; // 或者返回一个 loading spinner

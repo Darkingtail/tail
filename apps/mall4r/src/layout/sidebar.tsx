@@ -15,30 +15,71 @@ type MenuHandle = {
 	[key: string]: unknown;
 };
 
+const mergePaths = (base: string, segment: string) => {
+	const normalizedBase = base.replace(/\/+$/, "");
+	const normalizedSegment = segment.replace(/^\/+/, "");
+	if (!normalizedBase) {
+		return `/${normalizedSegment}`;
+	}
+	return `${normalizedBase}/${normalizedSegment}`;
+};
+
+const getRouteKey = (route: RouteObject): string | undefined => {
+	const handle = route.handle as MenuHandle | undefined;
+	return (
+		route.id ??
+		route.path ??
+		(handle?.menuId ? String(handle.menuId) : undefined)
+	);
+};
+
+const findRouteMatch = (
+	items: RouteObject[],
+	pathname: string,
+	parentPath = "",
+	ancestors: string[] = [],
+): { key: string; ancestors: string[] } | undefined => {
+	for (const item of items) {
+		const key = getRouteKey(item);
+		const currentPath =
+			item.path && item.path.length > 0
+				? mergePaths(parentPath, item.path)
+				: parentPath;
+		const matchPath =
+			item.index && !item.path ? parentPath || "/" : currentPath || "/";
+
+		if (pathname === matchPath && key) {
+			return { key, ancestors };
+		}
+
+		if (item.children?.length) {
+			const nextAncestors = key != null ? [...ancestors, key] : [...ancestors];
+			const childMatch = findRouteMatch(
+				item.children,
+				pathname,
+				currentPath,
+				nextAncestors,
+			);
+			if (childMatch) {
+				return childMatch;
+			}
+		}
+	}
+
+	return undefined;
+};
+
 export default function SideBar() {
 	const themeMode = useSettingStore((state) => state.settings.themeMode);
 	const menuList = useRouteStore((state) => state.menuList);
+	const routes = useMemo(() => buildRoutesFromMenu(menuList), [menuList]);
+
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { token } = theme.useToken();
 
 	const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 	const [stateOpenKeys, setStateOpenKeys] = useState<string[]>([]);
-
-	const routes = useMemo(() => buildRoutesFromMenu(menuList), [menuList]);
-	console.log("routes:", routes);
-
-	const navigate = useNavigate();
-
-	const location = useLocation();
-
-	const { token } = theme.useToken();
-
-	const mergePaths = (base: string, segment: string) => {
-		const normalizedBase = base.replace(/\/+$/, "");
-		const normalizedSegment = segment.replace(/^\/+/, "");
-		if (!normalizedBase) {
-			return `/${normalizedSegment}`;
-		}
-		return `${normalizedBase}/${normalizedSegment}`;
-	};
 
 	const resolvePathByKey = (
 		key: string,
@@ -46,18 +87,13 @@ export default function SideBar() {
 		parentPath = "",
 	): string | undefined => {
 		for (const item of items) {
-			const handle = item.handle as MenuHandle | undefined;
-			const itemKey =
-				item.id ??
-				item.path ??
-				(handle?.menuId ? String(handle.menuId) : undefined);
-
+			const routeKey = getRouteKey(item);
 			const currentPath =
 				item.path && item.path.length > 0
 					? mergePaths(parentPath, item.path)
 					: parentPath;
 
-			if (itemKey === key) {
+			if (routeKey === key) {
 				if (item.index) {
 					return parentPath || "/";
 				}
@@ -90,11 +126,8 @@ export default function SideBar() {
 
 		const generateMenu = (items: RouteObject[]): MenuProps["items"] => {
 			return items.map<MenuItem>((route) => {
+				const key = getRouteKey(route) ?? crypto.randomUUID();
 				const handle = route.handle as MenuHandle | undefined;
-				const key =
-					route.id ??
-					route.path ??
-					(handle?.menuId ? String(handle.menuId) : crypto.randomUUID());
 
 				return {
 					key,
@@ -108,52 +141,28 @@ export default function SideBar() {
 	}, [routes]);
 
 	const onOpenChange: MenuProps["onOpenChange"] = (openKeys) => {
-		console.log("openKeys:", openKeys);
 		setStateOpenKeys(openKeys);
 	};
 
 	useEffect(() => {
-		const findFirstLeaf = (items?: MenuProps["items"]): string | undefined => {
-			if (!items) return;
-			for (const item of items) {
-				if (!item) continue;
-				if (!("children" in item) || !item.children?.length) {
-					return String(item.key);
-				}
-				const child = findFirstLeaf(item.children);
-				if (child) return child;
-			}
-		};
+		const match = findRouteMatch(routes, location.pathname);
+		if (match) {
+			setSelectedKeys([match.key]);
+			setStateOpenKeys(match.ancestors);
+		} else {
+			setSelectedKeys([]);
+			setStateOpenKeys([]);
+		}
+	}, [routes, location.pathname]);
 
-		const innermostKey = findFirstLeaf(menuItems);
-		if (innermostKey) {
-			setSelectedKeys([innermostKey]);
-		}
-	}, [menuItems]);
-	// codex resume 019a863a-22bc-7831-a58a-2a07f81cbc7d
 	useEffect(() => {
-		const findKeyByPath = (
-			routes: RouteObject[],
-			pathname: string,
-		): string | undefined => {
-			const path = pathname.slice(1);
-			for (const item of routes) {
-				if (item.path === path) {
-					return path;
-				}
-				if (item.children && item.children.length > 0) {
-					const route = item.children.find((i) => i.path === path);
-					return route ? path : findKeyByPath(item.children, pathname);
-				}
-				return undefined;
+		if (!location.pathname && menuItems?.length) {
+			const firstKey = menuItems[0]?.key;
+			if (firstKey) {
+				setSelectedKeys([String(firstKey)]);
 			}
-			return undefined;
-		};
-		const key = findKeyByPath(routes, location.pathname);
-		if (key) {
-			setSelectedKeys([String(key)]);
 		}
-	}, [routes, location]);
+	}, [menuItems, location.pathname]);
 
 	return (
 		<Layout.Sider
@@ -162,8 +171,10 @@ export default function SideBar() {
 				color: token.colorText,
 				background: token.colorBgElevated,
 			}}
+			className="border-e border-gray-200"
 		>
 			<Menu
+				className="border-x-0!"
 				onClick={onClick}
 				mode="inline"
 				selectedKeys={selectedKeys}
