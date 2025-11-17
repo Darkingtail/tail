@@ -6,11 +6,11 @@ const USER_TESTUSER_PAGE = `${USER_TESTUSER_PREFIX}/page`;
 
 export interface TestUser {
 	id?: number;
-	userName: string;
-	password: string;
-	hobby: string;
-	createTime: string;
-	updateTime: string;
+	userName?: string;
+	password?: string;
+	hobby?: string;
+	createTime?: string;
+	updateTime?: string;
 }
 
 export interface GetTestUserPagePayload extends TestUser {
