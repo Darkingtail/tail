@@ -3,47 +3,28 @@ import {
 	createTestUserApi,
 } from "@/service/api/nest/nest1/test-user";
 import type { TableProps } from "antd";
-import { Button, Form, Input, Space, Table, Tag } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+	Button,
+	Form,
+	Input,
+	Popconfirm,
+	Space,
+	Table,
+	Tag,
+	message,
+} from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	DetailModal,
+	type DetailModalHandle,
+	type DetailModalType,
+	type TestUserFormFields,
+	type TestUserFormFieldsString,
+} from "./DetailModal";
+import useHobbyList from "./useHobbyList";
 
 type ColumnsType<T extends object> = TableProps<T>["columns"];
 type FilterValues = Partial<Pick<TestUser, "userName" | "password" | "hobby">>;
-
-const columns: ColumnsType<TestUser> = [
-	{
-		title: "UserName",
-		dataIndex: "userName",
-		key: "userName",
-	},
-	{
-		title: "Password",
-		dataIndex: "password",
-		key: "password",
-	},
-	{
-		title: "Hobby",
-		dataIndex: "hobby",
-		key: "hobby",
-		render: (hobbies: string) => (
-			<span>
-				{hobbies.split(",").map((hobby) => (
-					<Tag key={hobby}>{hobby}</Tag>
-				))}
-			</span>
-		),
-	},
-	{
-		title: "Action",
-		key: "action",
-		width: 100,
-		render: () => (
-			<Space size="middle">
-				<Button type="link">Update</Button>
-				<Button type="link">Delete</Button>
-			</Space>
-		),
-	},
-];
 
 const testUserApi = createTestUserApi();
 
@@ -55,6 +36,63 @@ const TestUserPage: React.FC = () => {
 	const [loading, setLoading] = useState(false);
 	const [filters, setFilters] = useState<FilterValues>({});
 	const [form] = Form.useForm<FilterValues>();
+	const [detailModalOpen, setDetailModalOpen] = useState(false);
+	const [detailModalType, setDetailModalType] =
+		useState<DetailModalType>("add");
+	const [confirmLoading, setConfirmLoading] = useState(false);
+	const modalRef = useRef<DetailModalHandle>(null);
+	const [editingRecord, setEditingRecord] = useState<TestUser | null>(null);
+
+	const columns: ColumnsType<TestUser> = [
+		{
+			title: "UserName",
+			dataIndex: "userName",
+			key: "userName",
+		},
+		{
+			title: "Password",
+			dataIndex: "password",
+			key: "password",
+		},
+		{
+			title: "Hobby",
+			dataIndex: "hobby",
+			key: "hobby",
+			render: (hobbies: string) => {
+				const label = hobbies
+					.split(",")
+					.map((i) => hobbyList.find((h) => h.value === i)?.label ?? i)
+					.join(", ");
+				return (
+					<span>
+						{label.split(",").map((hobby) => (
+							<Tag key={hobby}>{hobby}</Tag>
+						))}
+					</span>
+				);
+			},
+		},
+		{
+			title: "Action",
+			key: "action",
+			width: 100,
+			render: (_, record) => (
+				<Space size="middle">
+					<Button type="link" onClick={() => handleUpdate(record)}>
+						Update
+					</Button>
+
+					<Popconfirm
+						title="Sure to delete?"
+						onConfirm={() => handleDelete(record)}
+					>
+						<Button type="link">Delete</Button>
+					</Popconfirm>
+				</Space>
+			),
+		},
+	];
+	const { hobbyList, done } = useHobbyList();
 
 	const params = useMemo(
 		() => ({
@@ -84,8 +122,10 @@ const TestUserPage: React.FC = () => {
 	}, [params]);
 
 	useEffect(() => {
-		fetchDataSource();
-	}, [fetchDataSource]);
+		if (done) {
+			fetchDataSource();
+		}
+	}, [fetchDataSource, done]);
 
 	const handlePaginationChange = (pageNumber: number, size?: number) => {
 		setCurrent(pageNumber);
@@ -110,6 +150,104 @@ const TestUserPage: React.FC = () => {
 		setCurrent(1);
 	};
 
+	const handleAdd = () => {
+		setEditingRecord(null);
+		setDetailModalType("add");
+		setDetailModalOpen(true);
+	};
+
+	const handleUpdate = (record: TestUser) => {
+		setDetailModalType("update");
+		setEditingRecord(record);
+		const { id } = record;
+		if (id) {
+			// Fetch user details and populate the form
+			console.log("Fetching details for user ID:", id);
+			testUserApi
+				.info(id)
+				.then((data) => {
+					const valuesWithHobbyArray = {
+						...data,
+						hobby: data.hobby ? data.hobby.split(",") : [],
+					};
+					modalRef.current?.setFieldsValue(valuesWithHobbyArray);
+					setDetailModalOpen(true);
+				})
+				.catch((error) => {
+					console.log("Error fetching user details:", error);
+				});
+		}
+	};
+
+	const handleDelete = (record: TestUser) => {
+		const { id } = record;
+		if (id) {
+			// Implement delete logic here
+			console.log("Deleting user ID:", id);
+			testUserApi
+				.delete(id)
+				.then(() => {
+					// After deletion, refetch the data source
+					fetchDataSource();
+					message.success("User deleted successfully");
+				})
+				.catch((error) => {
+					console.log("Error deleting user:", error);
+				});
+		}
+	};
+
+	const handleDetailModalOk = (values: TestUserFormFields) => {
+		setConfirmLoading(true);
+		const valuesWithHobbyString = {
+			...values,
+			hobby: values.hobby.join(","),
+		};
+		switch (detailModalType) {
+			case "view":
+				// do nothing
+				return;
+			case "update":
+				void testUserApi
+					.update(valuesWithHobbyString)
+					.then(() => {
+						handleDetailModalClose();
+						fetchDataSource();
+						message.success("User updated successfully");
+					})
+					.catch((error) => {
+						console.log("error:", error);
+					})
+					.finally(() => {
+						setConfirmLoading(false);
+					});
+				return;
+			case "add":
+				void testUserApi
+					.add(valuesWithHobbyString)
+					.then(() => {
+						handleDetailModalClose();
+						fetchDataSource();
+						message.success("User added successfully");
+					})
+					.catch((error) => {
+						console.log("error:", error);
+					})
+					.finally(() => {
+						setConfirmLoading(false);
+					});
+				return;
+			default:
+				return;
+		}
+	};
+
+	const handleDetailModalClose = () => {
+		modalRef.current?.resetForm();
+		setDetailModalOpen(false);
+		setEditingRecord(null);
+	};
+
 	return (
 		<>
 			<Form form={form} layout="inline" clearOnDestroy onFinish={handleSearch}>
@@ -131,6 +269,7 @@ const TestUserPage: React.FC = () => {
 					<Button onClick={handleReset}>Clear</Button>
 				</Form.Item>
 			</Form>
+			<Button onClick={() => handleAdd()}>Add</Button>
 			<Table<TestUser>
 				className="mt-2"
 				size="small"
@@ -150,6 +289,23 @@ const TestUserPage: React.FC = () => {
 					onShowSizeChange: handlePageSizeChange,
 				}}
 				dataSource={dataSource}
+			/>
+			<DetailModal
+				ref={modalRef}
+				type={detailModalType}
+				open={detailModalOpen}
+				confirmLoading={confirmLoading}
+				hobbyList={hobbyList}
+				initialValues={
+					editingRecord
+						? ({
+								...editingRecord,
+								hobby: editingRecord.hobby ?? "",
+							} as TestUserFormFieldsString)
+						: null
+				}
+				onOk={(values: TestUserFormFields) => handleDetailModalOk(values)}
+				onCancel={() => handleDetailModalClose()}
 			/>
 		</>
 	);
