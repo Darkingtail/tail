@@ -3,13 +3,14 @@ import useUserStoreHydrated from "@/hooks/useUserStoreHydrated";
 import useUserStore from "@/store/userStore";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Button, Dropdown, Layout, Modal } from "antd";
+import { Button, Dropdown, Layout, Modal, theme } from "antd";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
 export default function NavBar() {
+	const { token } = theme.useToken();
 	const actions = useUserStore((state) => state.actions);
 	const { value: username } = useUserStoreHydrated(
 		(state) => state.userInfo.username ?? "",
@@ -65,7 +66,13 @@ export default function NavBar() {
 	return (
 		<>
 			{modalContextHolder}
-			<Header className="flex h-12 items-center justify-between border-b border-gray-200 px-4!">
+			<Header
+				className="flex h-12 items-center justify-between border-b px-4!"
+				style={{
+					borderColor: token.colorSplit,
+					background: token.colorBgContainer,
+				}}
+			>
 				<span className="text-base font-bold">mall4j</span>
 				<span>
 					<ThemeModeSwitch />

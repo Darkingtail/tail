@@ -53,6 +53,9 @@ const themeModeToken: Record<"dark" | "light", ThemeConfig> = {
 				triggerBg: "#14203a",
 				triggerColor: "#e2e8f0",
 			},
+			Content: {
+				bgColor: "#1e293b",
+			},
 			Menu: {
 				itemColor: "#cbd5f5",
 				itemHoverBg: "rgba(37, 99, 235, 0.12)",
@@ -109,6 +112,9 @@ const themeModeToken: Record<"dark" | "light", ThemeConfig> = {
 				bodyBg: "#f5f7fb",
 				triggerBg: "#e7edf8",
 				triggerColor: "#334155",
+			},
+			Content: {
+				bgColor: "#ffffff",
 			},
 			Menu: {
 				itemColor: "#475569",

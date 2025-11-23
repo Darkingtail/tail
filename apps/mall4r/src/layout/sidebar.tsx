@@ -170,8 +170,9 @@ export default function SideBar() {
 			style={{
 				color: token.colorText,
 				background: token.colorBgElevated,
+				borderInlineEnd: `1px solid ${token.colorSplit}`,
 			}}
-			className="border-e border-gray-200"
+			className="border-e"
 		>
 			<Menu
 				className="border-x-0!"
